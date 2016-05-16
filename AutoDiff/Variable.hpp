@@ -1,0 +1,1196 @@
+/*
+ * File:   Variable.hpp
+ * Author: matthewsupernaw
+ *
+ * Created on September 24, 2014, 1:09 PM
+ */
+
+/**
+ *
+ * @author  Matthew R. Supernaw
+ *
+ * Public Domain Notice
+ * National Oceanic And Atmospheric Administration
+ *
+ * This software is a "United States Government Work" under the terms of the
+ * United States Copyright Act.  It was written as part of the author's official
+ * duties as a United States Government employee and thus cannot be copyrighted.
+ * This software is freely available to the public for use. The National Park
+ * Service and the U.S. Government have not placed any restriction on its use
+ * or reproduction.  Although all reasonable efforts have been taken to ensure
+ * the accuracy and reliability of the software and data, the National Park
+ * Service and the U.S. Government do not and cannot warrant the performance
+ * or results that may be obtained by using this software or data. The National
+ * Park Service and the U.S. Government disclaim all warranties, express or
+ * implied,   including warranties of performance, merchantability or fitness
+ * for any particular purpose.
+ *
+ * Please cite the author(s) in any work or product based on this material.
+ *
+ */
+
+#ifndef ET4AD_VARIABLE_HPP
+#define ET4AD_VARIABLE_HPP
+
+#include <cmath>
+#include <stack>
+#include <vector>
+#include <valarray>
+#include <thread>
+#include "AlignedAllocator.hpp"
+#include "Expression.hpp"
+#include "GradientStructure.hpp"
+#include "Add.hpp"
+#include "Subtract.hpp"
+#include "Multiply.hpp"
+#include "Divide.hpp"
+#include "ASin.hpp"
+#include "Sin.hpp"
+#include "Cos.hpp"
+//#include "../Utilities/Profile.hpp"
+#ifndef M_PI
+#define M_PI 3.14159265358979323846 /* pi */
+#endif
+
+
+
+#ifdef ATL_USE_THREAD_LOCAL_STORAGE
+
+#if defined (__GNUC__)
+#define THREAD_LOCAL_STORAGE __thread
+#elif defined (_MSC_VER)
+#define THREAD_LOCAL_STORAGE __declspec(thread)
+#else // !__GNUC__ && !_MSC_VER
+#error "Define a thread local storage qualifier for your compiler/platform!"
+#endif
+
+#endif
+
+
+namespace atl {
+
+    /**
+     * Base class for parameter transformations. Used in optimization
+     * problems involving bounded parameters.
+     * @param val
+     * @param min
+     * @param max
+     * @return
+     */
+    template<typename REAL_T>
+    class ParameterTransformation {
+    public:
+        /**
+         * Convert the external value to its internal representation.
+         *
+         * @param val
+         * @param min
+         * @param max
+         * @return
+         */
+        virtual REAL_T External2Internal(REAL_T val, REAL_T min_, REAL_T max_) const = 0;
+        /**
+         * Convert a variables internal value to its external representation.
+         * @param val
+         * @param min
+         * @param max
+         * @return
+         */
+        virtual REAL_T Internal2External(REAL_T val, REAL_T min_, REAL_T max_) const = 0;
+        /**
+         * The derivative of Internal2External.
+         * @param val
+         * @param min
+         * @param max
+         * @return
+         */
+        virtual REAL_T DerivativeInternal2External(REAL_T val, REAL_T min_, REAL_T max_) const = 0;
+
+    };
+
+    /**
+     * Tanh transformation for a variable.
+     */
+    template<typename REAL_T>
+    class TanhParameterTransformation : public ParameterTransformation<REAL_T> {
+    public:
+
+        virtual REAL_T External2Internal(REAL_T val, REAL_T min_, REAL_T max_) const {
+            return min_ + .5 * (max_ - min_)*(1.0 + std::tanh(val));
+        }
+
+        virtual REAL_T Internal2External(REAL_T val, REAL_T min_, REAL_T max_) const {
+            return std::atanh(2.0 * (val - min_) / (max_ - min_) - 1.0);
+        }
+
+        virtual REAL_T DerivativeInternal2External(REAL_T val, REAL_T min_, REAL_T max_)const {
+            return 2.0 / ((max_ - min_) * std::pow((1.0 - ((2.0 * (val - min_)) / max_ - min_ - 1.0)), 2.0));
+        }
+    };
+
+    /**
+     * Sine transformation for a variable.
+     */
+    template<typename REAL_T>
+    class SinParameterTransformation : public ParameterTransformation<REAL_T> {
+    public:
+
+        virtual REAL_T External2Internal(REAL_T val, REAL_T min_, REAL_T max_) const {
+            if (val <= min_ || val >= max_)std::cout << "value exceeds bounds....\n";
+            //            return std::asin((2.0 * val) / (max_ - min_) - min_ / (max_ - min_) - max_ / (max_ - min_));
+            return std::asin((2.0 * (val - min_) / (max_ - min_)) - 1.0);
+        }
+
+        virtual REAL_T Internal2External(REAL_T val, REAL_T min_, REAL_T max_) const {
+            //            return min_ + (0.5 * (max_ - min_))*(std::sin(val) + 1.);
+            return min_ + (std::sin(val) + 1.0)*((max_ - min_) / 2.0);
+        }
+
+        virtual REAL_T DerivativeInternal2External(REAL_T val, REAL_T min_, REAL_T max_)const {
+            return 0.5 * ((max_ - min_) * std::cos(val));
+            //            return ((max_ - min_) * std::cos(val)) / 2.0;
+        }
+    };
+
+    template<typename REAL_T>
+    class ADMBParameterTransformation : public ParameterTransformation<REAL_T> {
+    public:
+
+        virtual REAL_T External2Internal(REAL_T val, REAL_T min_, REAL_T max_) const {
+            return std::asin(2.0 * (val - min_) / (max_ - min_) - 1.0) / (M_PI / 2.0); 
+        }
+
+        virtual REAL_T Internal2External(REAL_T val, REAL_T min_, REAL_T max_) const {
+            return min_ + (max_ - min_)*(.5 * std::sin(val * M_PI / 2.0) + .5); 
+        }
+
+        virtual REAL_T DerivativeInternal2External(REAL_T val, REAL_T min_, REAL_T max_)const {
+            return (max_-min_)*.5*M_PI/2.0*std::cos(val*M_PI/2.0);
+        }
+    };
+
+    template<typename REAL_T>
+    class LogitParameterTransformation : public ParameterTransformation<REAL_T> {
+    public:
+
+        virtual REAL_T External2Internal(REAL_T val, REAL_T min_, REAL_T max_)const {
+            REAL_T p = (val - min_) / (max_ - min_);
+            return std::log(p / (1.0 - p));
+        }
+
+        virtual REAL_T Internal2External(REAL_T val, REAL_T min_, REAL_T max_) const {
+            REAL_T p = ::exp(val) / (1.0 + ::exp(val));
+            return p * (max_ - min_) + min_;
+        }
+
+        virtual REAL_T DerivativeInternal2External(REAL_T val, REAL_T min_, REAL_T max_)const {
+            return (::exp(val) * ::log(M_E)*(max_ - min_)) / (::exp(val) + 1.0)-
+                    (::exp(2.0 * val) * ::log(M_E)*(max_ - min_)) / ::pow((::exp(val) + 1), 2.0);
+        }
+    };
+
+    template<typename REAL_T, //base type
+    int group = 0 > //group identifier
+    class Variable : public atl::ExpressionBase<REAL_T, Variable<REAL_T, group > > {
+        static LogitParameterTransformation<REAL_T> default_transformation;
+        VariableInfo<REAL_T>* mapped_info;
+        ParameterTransformation<REAL_T>* transformation;
+
+        /**
+         * Default assignment function used by all operators and assignments.
+         * @param gs - atl::GradientStructure<REAL_T>
+         * @param exp - atl::ExpressionBase<REAL_T, A>
+         */
+        template<typename A>
+        inline void Assign_p(atl::GradientStructure<REAL_T>& gs, const atl::ExpressionBase<REAL_T, A>& exp) {
+            if (gs.recording) {
+
+                std::vector<atl::VariableInfo<REAL_T>* > ids;
+                size_t index = gs.NextIndex();
+                StackEntry<REAL_T>& entry = gs.gradient_stack[index];
+
+
+                typename IDSet<atl::VariableInfo<REAL_T>* >::iterator it;
+                typename IDSet<atl::VariableInfo<REAL_T>* >::iterator jt;
+                typename IDSet<atl::VariableInfo<REAL_T>* >::iterator kt;
+                typename IDSet<atl::VariableInfo<REAL_T>* >::iterator dt;
+
+                exp.PushIds(entry.ids);
+                entry.first.resize(entry.ids.size());
+                REAL_T dx = 0.0;
+                REAL_T dxx = 0.0;
+                REAL_T dxxx = 0.0;
+                int i, j, k;
+                util::CombinationsWithRepetition combos(0, 0);
+
+
+                switch (gs.derivative_trace_level) {
+
+                        this->info->is_dependent++;
+                    case FIRST_ORDER:
+                        i = 0;
+                        entry.w = this->info;
+                        for (it = entry.ids.begin(); it != entry.ids.end(); ++it) {
+                            if ((*it)->id > gs.max_id) {
+                                gs.max_id = (*it)->id;
+                            }
+                            if ((*it)->id < gs.min_id) {
+                                gs.min_id = (*it)->id;
+                            }
+                            dx = exp.EvaluateDerivative((*it)->id);
+
+                            entry.first[i] = dx;
+                            i++;
+                        }
+                        break;
+                    case SECOND_ORDER:
+                        std::cout << "\"SECOND_ORDER\" not yet available!\n" << std::flush;
+                        exit(0);
+                        i = 0;
+                        entry.w = this->info;
+                        entry.second.resize(entry.ids.size());
+                        for (it = entry.ids.begin(); it != entry.ids.end(); ++it) {
+                            dx = exp.EvaluateDerivative((*it)->id);
+                            dxx = exp.EvaluateDerivative((*it)->id, (*it)->id);
+                            entry.first[i] = dx;
+                            entry.second[i] = dxx;
+                            i++;
+                        }
+                        break;
+                    case THIRD_ORDER:
+                        std::cout << "\"THIRD_ORDER\" not yet available!\n" << std::flush;
+                        exit(0);
+                        i = 0;
+                        entry.w = this->info;
+                        entry.second.resize(entry.ids.size());
+                        entry.third.resize(entry.ids.size());
+                        for (it = entry.ids.begin(); it != entry.ids.end(); ++it) {
+                            (*it)->dependence_level++;
+                            dx = exp.EvaluateDerivative((*it)->id);
+                            dxx = exp.EvaluateDerivative((*it)->id, (*it)->id);
+                            dxxx = exp.EvaluateDerivative((*it)->id, (*it)->id, (*it)->id);
+                            entry.first[i] = dx;
+                            entry.second[i] = dxx;
+                            entry.third[i] = dxxx;
+                            i++;
+                        }
+                        break;
+                    case SECOND_ORDER_MIXED_PARTIALS:
+
+                        i = 0;
+                        entry.w = new VariableInfo<REAL_T>();
+                        entry.w->is_dependent = 1;
+                        entry.w->is_nl = exp.IsNonFunction();
+                        entry.second_mixed.resize(entry.ids.size() * entry.ids.size());
+                        exp.MakeNLInteractions();
+
+                        //                        for (it = entry.ids.begin(); it != entry.ids.end(); ++it) {
+                        //
+                        //                            if ((*it)->is_dependent) {
+                        //                                for(dt = (*it)->dependencies.begin(); dt != (*it)->dependencies.end(); ++dt){
+                        //                                    if(!(*dt)->is_dependent){
+                        //                                        entry.w->dependencies.insert((*dt));
+                        //                                    }
+                        //                                }
+                        //                            }
+                        //                            
+                        //                        }
+
+
+
+                        for (it = entry.ids.begin(); it != entry.ids.end(); ++it) {
+
+
+                            if ((*it) != entry.w) {
+                                entry.w->dependencies.insert((*it));
+                            }
+
+
+                            (*it)->dependence_level++;
+                            dx = exp.EvaluateDerivative((*it)->id);
+
+                            entry.first[i] = dx;
+                            j = 0;
+
+                            if (((*it)->is_nl) || (*it)->has_nl_interaction) {
+
+                                for (jt = entry.ids.begin(); jt != entry.ids.end(); ++jt) {
+
+                                    dxx = exp.EvaluateDerivative((*it)->id, (*jt)->id);
+                                    entry.second_mixed[i * entry.first.size() + j] = dxx;
+                                    //                                    if (i > 0 && i != j) {
+                                    entry.second_mixed[j * entry.first.size() + i] = dxx;
+
+                                    if (dxx != 0.0) {
+                                        (*it)->PushNLDependency((*jt));
+                                    }
+
+
+                                    //                                    }
+
+                                    j++;
+                                }
+
+                            } else {
+                                for (jt = entry.ids.begin(); jt != entry.ids.end(); ++jt) {
+                                    dxx = exp.EvaluateDerivative((*it)->id, (*jt)->id);
+                                    entry.second_mixed[i * entry.first.size() + j] = dxx;
+                                    //                                    if (i > 0 && i != j) {
+                                    entry.second_mixed[j * entry.first.size() + i] = dxx;
+
+                                    //                                    }
+
+                                    j++;
+                                }
+                            }
+                            i++;
+                        }
+
+
+                        this->info->Release();
+                        this->info = entry.w;
+                        this->info->dependence_level++;
+                        break;
+                    case THIRD_ORDER_MIXED_PARTIALS:
+                        //Uses the extended Clairaut’s Theorem here. We expect our functions to be 
+                        //continuous, therefore f_xyz = f_zxy = f_zyx and so on,
+                        //this will speed up the evaluation.
+
+                        entry.w = new VariableInfo<REAL_T>();
+                        entry.w->is_dependent = 1;
+                        entry.w->is_nl = exp.IsNonFunction();
+                        entry.second_mixed.resize(entry.ids.size() * entry.ids.size());
+                        entry.third_mixed.resize(entry.ids.size() * entry.ids.size() * entry.ids.size());
+                        i = 0;
+
+                        exp.MakeNLInteractions();
+
+
+                        for (it = entry.ids.begin(); it != entry.ids.end(); ++it) {
+
+                            if ((*it) != entry.w) {
+                                entry.w->dependencies.insert((*it));
+                            }
+                            (*it)->dependence_level++;
+                            dx = exp.EvaluateDerivative((*it)->id);
+                            //                            if ((((*it)->has_nl_interaction && !(*it)->is_dependent) || (*it)->is_nl) && dx != 0.0) {
+                            //                                (*it)->push_start = index;
+                            //                            }
+                            //                            if (!(*it)->is_dependent ) {
+                            //                                (*it)->push_start = index;
+                            //                            }
+                            entry.first[i] = dx;
+                            j = 0;
+                            if (((*it)->is_nl) || (*it)->has_nl_interaction) {
+
+                                for (jt = entry.ids.begin(); jt != entry.ids.end(); ++jt) {
+
+                                    dxx = exp.EvaluateDerivative((*it)->id, (*jt)->id);
+                                    entry.second_mixed[i * entry.first.size() + j] = dxx;
+                                    //                                    if (i > 0 && i != j) {
+                                    entry.second_mixed[j * entry.first.size() + i] = dxx;
+
+                                    if (dxx != 0.0) {
+                                        (*it)->PushNLDependency((*jt));
+                                    }
+
+
+                                    //                                    }
+                                    k = 0;
+                                    for (kt = entry.ids.begin(); kt != entry.ids.end(); ++kt) {
+                                        dxxx = exp.EvaluateDerivative((*it)->id, (*jt)->id, (*kt)->id);
+                                        entry.third_mixed[i * entry.first.size() * entry.first.size() + j * entry.first.size() + k] = dxxx;
+
+                                        k++;
+                                    }
+
+                                    j++;
+                                }
+
+                            } else {
+                                for (jt = entry.ids.begin(); jt != entry.ids.end(); ++jt) {
+                                    dxx = exp.EvaluateDerivative((*it)->id, (*jt)->id);
+                                    entry.second_mixed[i * entry.first.size() + j] = dxx;
+                                    //                                    if (i > 0 && i != j) {
+                                    entry.second_mixed[j * entry.first.size() + i] = dxx;
+
+                                    //
+                                    //                                    }
+                                    k = 0;
+                                    for (kt = entry.ids.begin(); kt != entry.ids.end(); ++kt) {
+                                        dxxx = exp.EvaluateDerivative((*it)->id, (*jt)->id, (*kt)->id);
+                                        entry.third_mixed[i * entry.first.size() * entry.first.size() + j * entry.first.size() + k] = dxxx;
+                                        k++;
+                                    }
+
+                                    j++;
+                                }
+                            }
+                            i++;
+                        }
+
+                        //                        for (it = entry.ids.begin(); it != entry.ids.end(); ++it) {
+                        //                            ids.push_back((*it));
+                        //                        }
+                        //                        combos.Reset(entry.ids.size(), 3);
+                        //
+                        //                        do {
+                        //
+                        //                            dxxx = exp.EvaluateDerivative(ids[combos[0]]->id, ids[combos[1]]->id, ids[combos[2]]->id);
+                        //                            entry.third_mixed[combos[0] * ids.size() * ids.size() + combos[1] * ids.size() + combos[2]] = dxxx;
+                        //                            entry.third_mixed[combos[0] * ids.size() * ids.size() + combos[2] * ids.size() + combos[1]] = dxxx;
+                        //                            entry.third_mixed[combos[1] * ids.size() * ids.size() + combos[2] * ids.size() + combos[0]] = dxxx;
+                        //                            entry.third_mixed[combos[1] * ids.size() * ids.size() + combos[0] * ids.size() + combos[2]] = dxxx;
+                        //                            entry.third_mixed[combos[2] * ids.size() * ids.size() + combos[1] * ids.size() + combos[0]] = dxxx;
+                        //                            entry.third_mixed[combos[2] * ids.size() * ids.size() + combos[0] * ids.size() + combos[1]] = dxxx;
+                        //                        } while (combos.Next());
+
+                        this->info->Release();
+                        this->info = entry.w;
+
+                        break;
+                    case GRADIENT:
+
+                        i = 0;
+                        entry.w = this->info;
+                        for (it = entry.ids.begin(); it != entry.ids.end(); ++it) {
+                            dx = exp.EvaluateDerivative((*it)->id);
+                            entry.first[i] = dx;
+                            i++;
+                        }
+                        break;
+                    case GRADIENT_AND_HESSIAN:
+                        i = 0;
+                        entry.w = new VariableInfo<REAL_T>();
+                        entry.second_mixed.resize(entry.ids.size() * entry.ids.size());
+
+                        for (it = entry.ids.begin(); it != entry.ids.end(); ++it) {
+                            (*it)->dependence_level++;
+
+                            dx = exp.EvaluateDerivative((*it)->id);
+                            entry.first[i] = dx;
+                            j = 0;
+                            for (jt = entry.ids.begin(); jt != entry.ids.end(); ++jt) {
+                                dxx = exp.EvaluateDerivative((*it)->id, (*jt)->id);
+                                entry.second_mixed[i * entry.first.size() + j] = dxx;
+                                if (i > 0 && i != j) {
+                                    entry.second_mixed[j * entry.first.size() + i] = dxx;
+                                }
+                                if (j == i) {
+                                    break;
+                                }
+                                j++;
+                            }
+                            i++;
+                        }
+                        this->info->Release();
+                        this->info = entry.w;
+                        break;
+                    case DYNAMIC_RECORD:
+                        entry.w = this->info; //new VariableInfo<REAL_T>();
+                        for (it = entry.ids.begin(); it != entry.ids.end(); ++it) {
+                            (*it)->dependence_level++;
+                        }
+                        entry.exp = exp.GetDynamicExpession();
+                        //                        std::cout << "\"DYNAMIC_RECORD\" not yet available!\n" << std::flush;
+                        //                        exit(0);
+                        break;
+                    default:
+                        std::cout << "Unkown derivative trace level.";
+                        exit(0);
+
+                }
+            }
+            this->SetValue(exp.GetValue());
+        }
+
+        inline void Initialize_p(atl::GradientStructure<REAL_T>& gs, REAL_T value) {
+
+            StackEntry<REAL_T>& entry = gs.initialized_variables[this->info->id];
+            entry.w = this->info;
+            this->SetValue(value);
+        }
+
+
+
+    public:
+        static REAL_T penalty_slope;
+        static REAL_T penalty_intercept;
+        typedef REAL_T BASE_TYPE;
+        mutable VariableInfo<REAL_T>* info;
+        REAL_T min_boundary_m;
+        REAL_T max_boundary_m;
+
+
+        std::string name_m;
+        bool bounded_m;
+
+
+        static /* ATTRIBUTE_TLS */ GradientStructure<REAL_T> gradient_structure_g;
+
+        static bool IsRecording() {
+            return Variable<REAL_T, group>::gradient_structure_g.recording;
+        }
+
+        static void SetRecording(bool record) {
+            Variable<REAL_T, group>::gradient_structure_g.recording = record;
+        }
+
+        Variable() :
+        info(new atl::VariableInfo<REAL_T>()),
+        bounded_m(false),
+        min_boundary_m(std::numeric_limits<REAL_T>::min()),
+        max_boundary_m(std::numeric_limits<REAL_T>::max()),
+        transformation(&default_transformation) {
+            this->Initialize_p(Variable<REAL_T, group>::gradient_structure_g, 0.0);
+        }
+
+        Variable(REAL_T val,
+                REAL_T min_boundary = std::numeric_limits<REAL_T>::min(),
+                REAL_T max_boundary = std::numeric_limits<REAL_T>::max()) :
+        info(new atl::VariableInfo<REAL_T>()),
+        bounded_m(false),
+        min_boundary_m(min_boundary),
+        max_boundary_m(max_boundary),
+        transformation(&default_transformation) {
+            //            info->vvalue = (val);
+            this->Initialize_p(Variable<REAL_T, group>::gradient_structure_g, val);
+        }
+
+        Variable(const Variable& other)
+        : info(other.info),
+        min_boundary_m(other.min_boundary_m),
+        max_boundary_m(other.max_boundary_m),
+        bounded_m(other.bounded_m),
+        transformation(&default_transformation) {
+            info->Aquire();
+            mapped_info = (other.mapped_info);
+
+        }
+
+        Variable(Variable&& other) {
+            this->Swap(other);
+        }
+
+        template<typename A>
+        Variable(const ExpressionBase<REAL_T, A>& exp) :
+        info(new atl::VariableInfo<REAL_T>()),
+        bounded_m(false),
+        min_boundary_m(std::numeric_limits<REAL_T>::min()),
+        max_boundary_m(std::numeric_limits<REAL_T>::max()),
+        transformation(&default_transformation) {
+            mapped_info = (this->info);
+            this->Assign_p(atl::Variable<REAL_T, group>::gradient_structure_g, exp);
+        }
+
+        virtual ~Variable() {
+            info->Release();
+        }
+
+        /**
+         * Allows for computations and gradient calculations separate from the
+         * global gradient structure. Helpful for multi-threaded functions. It
+         * allows for adjoint derivatives to be computed and set in the global
+         * gradient structure with respect to the desired variables.
+         *
+         * @param gs
+         * @param var
+         * @param exp
+         */
+        template<typename A>
+        inline void Assign(atl::GradientStructure<REAL_T>& gs, const atl::ExpressionBase<REAL_T, A>& exp) {
+            this->Assign_p(gs, exp);
+        }
+
+        inline Variable<REAL_T>& operator=(const REAL_T & value) {
+            this->SetValue(value);
+            return *this;
+        }
+
+        inline Variable<REAL_T>& operator=(const Variable<REAL_T> & other) {
+            this->Assign_p(atl::Variable<REAL_T, group>::gradient_structure_g, other);
+            return *this;
+        }
+
+        inline void Swap(Variable & other) {
+            info = (other.info);
+            min_boundary_m = (other.min_boundary_m);
+            max_boundary_m = (other.max_boundary_m);
+            bounded_m = (other.bounded_m);
+            transformation = (other.transformation);
+            mapped_info = (other.mapped_info);
+            other.info = new atl::VariableInfo<REAL_T>();
+            other.min_boundary_m = std::numeric_limits<REAL_T>::min();
+            other.max_boundary_m = std::numeric_limits<REAL_T>::max();
+            other.bounded_m = false;
+            other.transformation = &default_transformation;
+            other.mapped_info = this->mapped_info;
+        }
+
+        template<class A>
+        inline Variable& operator=(const ExpressionBase<REAL_T, A>& exp) {
+            this->Assign_p(Variable<REAL_T>::gradient_structure_g, exp);
+            return *this;
+        }
+
+        inline Variable operator-() {
+            return static_cast<REAL_T> (-1.0) * (*this);
+        }
+
+        inline Variable& operator+=(const REAL_T & val) {
+
+            *this = *this+val;
+            return *this;
+        }
+
+        inline Variable& operator+=(const Variable & other) {
+            *this = *this+other;
+            return *this;
+        }
+
+        template<class A>
+        inline Variable& operator+=(const ExpressionBase<REAL_T, A>& exp) {
+            *this = *this+exp;
+            return *this;
+        }
+
+        inline Variable& operator-=(const REAL_T & val) {
+            *this = *this-val;
+            return *this;
+        }
+
+        inline Variable& operator-=(const Variable & other) {
+            *this = *this-other;
+            return *this;
+        }
+
+        template<class A>
+        inline Variable& operator-=(const ExpressionBase<REAL_T, A>& exp) {
+            *this = *this-exp;
+            return *this;
+        }
+
+        inline Variable& operator*=(const REAL_T & val) {
+            *this = *this*val;
+            return *this;
+        }
+
+        inline Variable& operator*=(const Variable & other) {
+            *this = *this*other;
+            return *this;
+        }
+
+        template<class A>
+        inline Variable& operator*=(const ExpressionBase<REAL_T, A>& exp) {
+            *this = (*this) * exp;
+            return *this;
+        }
+
+        inline Variable& operator/=(const REAL_T & val) {
+            *this = *this / val;
+            return *this;
+        }
+
+        inline Variable& operator/=(const Variable & other) {
+            *this = *this / other;
+            return *this;
+        }
+
+        template<class A>
+        inline Variable& operator/=(const ExpressionBase<REAL_T, A>& exp) {
+            *this = *this / exp;
+            return *this;
+        }
+
+        inline Variable& operator++() {
+            *this = *this+static_cast<REAL_T> (1.0);
+            return *this;
+        }
+
+        inline const Variable operator++(int i) {
+            Variable temp = *this;
+            *this = static_cast<REAL_T> (1.0)+ (*this);
+            return temp;
+        }
+
+        inline Variable& operator--() {
+            *this = *this-static_cast<REAL_T> (1.0);
+            return *this;
+        }
+
+        inline const Variable operator--(int i) {
+            Variable temp = *this;
+            *this = (*this) - static_cast<REAL_T> (1.0);
+            return temp;
+        }
+
+        /**
+         * Returns the value for this Variable.
+         * @return 
+         */
+        inline const REAL_T GetValue() const {
+            return info->vvalue;
+        }
+
+        /**
+         * Returns the internal value from the variables transformation.
+         */
+        inline const REAL_T GetInternalValue() const {
+            if (this->IsBounded()) {
+                return this->transformation->External2Internal(this->GetValue(), this->GetMinBoundary(), this->GetMaxBoundary());
+            } else {
+                return this->GetValue();
+            }
+        }
+
+        /**
+         * Returns the scaled gradient value from the variables transformation.
+         * @param x
+         * @return 
+         */
+        REAL_T GetScaledGradient(REAL_T x) {
+            if (bounded_m) {
+                return this->transformation->DerivativeInternal2External(x, min_boundary_m, max_boundary_m);
+            } else {
+                return 1.0;
+            }
+        }
+
+        /**
+         * If this variable is bounded, the value of
+         * v will be transformed from internal to external
+         * representation and set to the value of this
+         * variable. See class ParameterTransformation
+         * @param v
+         */
+        inline void UpdateValue(REAL_T v) {
+
+            if (this->IsBounded()) {
+                this->SetValue(this->transformation->Internal2External(v, this->GetMinBoundary(), this->GetMaxBoundary()));
+
+            } else {
+                this->SetValue(v);
+            }
+        }
+
+        /**
+         * If this variable is bounded, the value of
+         * v will be transformed from internal to external
+         * representation and set to the value of this
+         * variable. A penalty will be computed if v falls out of the 
+         * variables bounds. See class ParameterTransformation
+         * @param v
+         */
+        inline void UpdateValue(REAL_T v, atl::Variable<REAL_T>& penalty) {
+
+            if (this->IsBounded()) {
+
+                if (v >= this->GetMaxBoundary()) {
+                    atl::Variable<REAL_T> p(v - this->GetMaxBoundary());
+
+                    this->info->vvalue = v;
+                    penalty += p;
+                } else if (v <= this->GetMinBoundary()) {
+                    atl::Variable<REAL_T> p(std::fabs(v - this->GetMaxBoundary()));
+                    this->info->vvalue = v;
+                    penalty += p;
+                } else {
+                    this->info->vvalue = v;
+                }
+
+            } else {
+                this->SetValue(v);
+            }
+
+        }
+
+        /**
+         * Sets the value of this variable. If the variable is bounded,
+         * the value will be set between the min and max boundary. If the
+         * value is less than the minimum boundary, the variables value is
+         * set to minimum boundary. If the  value is greater than the maximum
+         * boundary, the variables value is set to maximum boundary. If the
+         * value is signaling nan, the value is set to the mid point between
+         * the min and max boundary.
+         *
+         * @param value
+         */
+        inline void SetValue(const REAL_T & value) {
+
+            if (!bounded_m) {
+                info->vvalue = value;
+            } else {
+                if (value != value) {//nan
+                    info->vvalue = min_boundary_m + (max_boundary_m - min_boundary_m) / static_cast<REAL_T> (2.0);
+
+                    return;
+                }
+
+                if (value < min_boundary_m) {
+
+                    info->vvalue = min_boundary_m;
+                } else if (value > max_boundary_m) {
+                    info->vvalue = max_boundary_m;
+
+
+                } else {
+                    info->vvalue = value;
+                }
+            }
+        }
+
+        /**
+         * Returns the variables transformation functor.
+         * @return 
+         */
+        ParameterTransformation<REAL_T>& GetParameterTransformation() {
+            return this->transformation;
+        }
+
+        /**
+         * Returns the max boundary.
+         * 
+         * @return 
+         */
+        REAL_T GetMaxBoundary() const {
+            return max_boundary_m;
+        }
+
+        /**
+         * Sets the max boundary.
+         * 
+         * @param max_boundary
+         */
+        void SetMaxBoundary(REAL_T max_boundary) {
+            this->max_boundary_m = max_boundary;
+        }
+
+        /**
+         * Returns the min boundary.
+         * 
+         * @return 
+         */
+        REAL_T GetMinBoundary() const {
+            return min_boundary_m;
+        }
+
+        /**
+         * Sets the min boundary.
+         */
+        void SetMinBoundary(REAL_T min_boundary) {
+            this->min_boundary_m = min_boundary;
+        }
+
+        /**
+         * Sets the boundary values for this variable. 
+         * 
+         * @param min_boundary
+         * @param max_boundary
+         */
+        inline void SetBounds(REAL_T min_boundary, REAL_T max_boundary) {
+            this->bounded_m = true;
+            this->SetMinBoundary(min_boundary);
+            this->SetMaxBoundary(max_boundary);
+            if (this->GetValue()<this->GetMinBoundary() || this->GetValue()>this->GetMaxBoundary() || this->GetValue() == 0.0) {
+                this->SetValue((min_boundary + max_boundary) / 2.0);
+            }
+        }
+
+        /**
+         * 
+         * @return 
+         */
+        bool IsBounded() const {
+            return bounded_m;
+        }
+
+        /**
+         * Returns the variables name.
+         * 
+         * @return 
+         */
+        std::string GetName() const {
+            return name_m;
+        }
+
+        /**
+         * Sets the variables name. 
+         * 
+         * @param name
+         */
+        void SetName(std::string name) {
+            this->info->name = name;
+            this->name_m = name;
+        }
+
+        inline void PushIds(IDSet<atl::VariableInfo<REAL_T>* >& ids, bool include_dependent)const {
+            this->info->has_nl_interaction = include_dependent;
+            //            std::cout<<"variable has nl = "<<include_dependent<<"\n";
+            ids.insert(this->info);
+        }
+
+        /**
+         * Pushes this variables info into a set. Used by Expression Templates
+         * for local derivative info.
+         * 
+         * @param ids
+         */
+        inline void PushIds(IDSet<atl::VariableInfo<REAL_T>* >& ids)const {
+            ids.insert(this->info);
+        }
+
+        /**
+         * Pushes this variables id into a set. Used by Expression Templates
+         * for local derivative info.
+         * 
+         * @param ids
+         */
+        inline void PushIds(IDSet<uint32_t >& ids)const {
+
+            ids.insert(this->info->id);
+
+        }
+
+        bool IsNonFunction()const {
+            return false;
+        }
+
+        bool IsNonlinear()const {
+            return info->is_nl;
+        }
+
+        inline void MakeNLInteractions(bool b = false)const {
+            this->info->has_nl_interaction = b;
+        }
+
+        inline void PushNLInteractions(IDSet<atl::VariableInfo<REAL_T>* >& ids)const {
+            //            ids.insert(this->info);
+        }
+
+        /**
+         * Evaluates the first derivative w.r.t id a.
+         * @param a
+         * @return 
+         */
+        inline REAL_T EvaluateDerivative(uint32_t a) const {
+            return static_cast<REAL_T> (this->info->id == a);
+        }
+
+        /**
+         * Evaluates the second derivative w.r.t id a and b.
+         * @param a
+         * @param b
+         * @return 
+         */
+        inline REAL_T EvaluateDerivative(uint32_t a, uint32_t b) const {
+            return 0.0;
+        }
+
+        /**
+         * Evaluates the third derivative w.r.t id a, b, and c.
+         * @param x
+         * @param y
+         * @param z
+         * @return 
+         */
+        inline REAL_T EvaluateDerivative(uint32_t x, uint32_t y, uint32_t z) const {
+            return 0.0;
+        }
+
+        /**
+         * Returns a dynamic representation of this Variable. Used for the 
+         * DYNAMIC_RECORD option when evaluating expressions.
+         *
+         * @return 
+         */
+        inline atl::DynamicExpression<REAL_T>* GetDynamicExpession() const {
+            return new atl::DynamicVariable<REAL_T>(info);
+        }
+
+        /**
+         * Accumulates derivatives in a GradientStructure and puts the gradient 
+         * into a std::vector. 
+         * 
+         * @param gs
+         * @param variables
+         * @param gradient
+         */
+        static void ComputeGradient(GradientStructure<REAL_T>& gs, std::vector<atl::Variable<REAL_T>* >& variables, std::vector<REAL_T>& gradient) {
+            gs.Accumulate();
+            int size = variables.size();
+            gradient.resize(size);
+            for (int i = 0; i < size; i++) {
+                gradient[i] = variables[i]->info->dvalue;
+            }
+        }
+
+        /**
+         * Accumulates derivatives in a GradientStructure and puts the gradient 
+         * into a std::valarray. 
+         * 
+         * @param gs
+         * @param variables
+         * @param gradient
+         */
+        static void ComputeGradient(GradientStructure<REAL_T>& gs, std::vector<atl::Variable<REAL_T>* >& variables, std::valarray<REAL_T>& gradient) {
+            gs.Accumulate();
+            int size = variables.size();
+            gradient.resize(size);
+            for (int i = 0; i < size; i++) {
+                gradient[i] = variables[i]->info->dvalue;
+            }
+        }
+
+        /**
+         * Accumulates derivatives in a GradientStructure and puts the gradient 
+         * and second order derivatives into std::vector's.  
+         * @param gs
+         * @param variables
+         * @param gradient
+         * @param hessian
+         */
+        static void ComputeGradientAndHessian(GradientStructure<REAL_T>& gs,
+                std::vector<atl::Variable<REAL_T>* >& variables,
+                std::vector<REAL_T>& gradient, std::vector<std::vector<REAL_T> >& hessian) {
+            gs.Accumulate();
+            int size = variables.size();
+            gradient.resize(size);
+            hessian.resize(size);
+            for (int i = 0; i < size; i++) {
+                gradient[i] = variables[i]->info->dvalue;
+                hessian[i].resize(size);
+                for (int j = 0; j < size; j++) {
+                    hessian[i][j] = gs.Value(variables[i]->info->id, variables[j]->info->id); //hessian_row[variables[j]->info];
+                }
+            }
+        }
+
+        /**
+         * Accumulates derivatives in a GradientStructure and puts the gradient 
+         * and second order derivatives into std::valarray's.  
+         * @param gs
+         * @param variables
+         * @param gradient
+         * @param hessian
+         */
+        static void ComputeGradientAndHessian(GradientStructure<REAL_T>& gs,
+                std::vector<atl::Variable<REAL_T>* >& variables,
+                std::valarray<REAL_T>& gradient, std::valarray<std::valarray<REAL_T> >& hessian) {
+            gs.Accumulate();
+            int size = variables.size();
+            gradient.resize(size);
+            hessian.resize(size);
+            for (int i = 0; i < size; i++) {
+                gradient[i] = variables[i]->info->dvalue;
+                hessian[i].resize(size);
+                for (int j = 0; j < size; j++) {
+                    hessian[i][j] = gs.Value(variables[i]->info->id, variables[j]->info->id);
+                }
+            }
+        }
+
+        /**
+         * Accumulates derivatives in a GradientStructure and puts the gradient, 
+         * second and third order derivatives into std::vector's.  
+         * @param gs
+         * @param variables
+         * @param gradient
+         * @param hessian
+         */
+        static void ComputeUpToThirdOrderMixed(GradientStructure<REAL_T>& gs,
+                std::vector<atl::Variable<REAL_T>* >& variables,
+                std::vector<REAL_T>& gradient, std::vector<std::vector<REAL_T> >& hessian,
+                std::vector<std::vector<std::vector<REAL_T> > >& third) {
+            gs.AccumulateThirdOrderMixed();
+            int size = variables.size();
+            gradient.resize(size);
+            hessian.resize(size);
+            for (int i = 0; i < size; i++) {
+                gradient[i] = variables[i]->info->dvalue; //variables[i]->info->dvalue;
+                hessian[i].resize(size);
+                for (int j = 0; j < size; j++) {
+                    hessian[i][j] = gs.Value(variables[i]->info->id, variables[j]->info->id); //variables[i]->info->GetHessianRowValue(variables[j]->info);
+                    for (int k = 0; k < size; k++) {
+                        third[i][j][k] = gs.Value(variables[i]->info->id, variables[j]->info->id, variables[k]->info->id); //variables[i]->info->GetThirdOrderValue(variables[j]->info, variables[k]->info);
+                    }
+                }
+
+            }
+        }
+
+        /**
+         * Accumulates derivatives in a GradientStructure and puts the gradient, 
+         * second and third order derivatives into std::valarray's.  
+         * @param gs
+         * @param variables
+         * @param gradient
+         * @param hessian
+         */
+        static void ComputeUpToThirdOrderMixed(GradientStructure<REAL_T>& gs,
+                std::vector<atl::Variable<REAL_T>* >& variables,
+                std::valarray<REAL_T>& gradient, std::valarray<std::valarray<REAL_T> >& hessian,
+                std::valarray<std::valarray<std::valarray<REAL_T> > >& third) {
+            gs.AccumulateThirdOrderMixed();
+            int size = variables.size();
+            gradient.resize(size);
+            hessian.resize(size);
+            for (int i = 0; i < size; i++) {
+                gradient[i] = variables[i]->info->dvalue;
+                hessian[i].resize(size);
+                for (int j = 0; j < size; j++) {
+                    hessian[i][j] = gs.Value(variables[i]->info->id, variables[j]->info->id); //variables[i]->info->GetHessianRowValue(variables[j]->info);
+                    for (int k = 0; k < size; k++) {
+                        third[i][j][k] = gs.Value(variables[i]->info->id, variables[j]->info->id, variables[k]->info->id); //variables[i]->info->GetThirdOrderValue(variables[j]->info, variables[k]->info);
+                    }
+                }
+
+            }
+        }
+
+        /**
+         *Returns mapped variable info.
+         */
+        VariableInfo<REAL_T>* GetMappedInfo() const {
+            return mapped_info;
+        }
+
+        /**
+         * Sets mapped variable info. Mapped information is useful
+         * for certain concurrent applications when adjoint entries are 
+         * used. 
+         * @param mapped_info
+         */
+        void SetMappedInfo(VariableInfo<REAL_T>* mapped_info) {
+            this->mapped_info = mapped_info;
+        }
+
+
+    };
+
+    template<typename T, int group>
+    T Variable<T, group>::penalty_slope = 1.000015;
+
+    template<typename T, int group>
+    T Variable<T, group>::penalty_intercept = .0001;
+
+    template<typename REAL_T, int group>
+    /* ATTRIBUTE_TLS */ GradientStructure<REAL_T> Variable<REAL_T, group>::gradient_structure_g;
+
+    template<typename REAL_T, int group>
+    LogitParameterTransformation<REAL_T> Variable<REAL_T, group>::default_transformation;
+
+
+}
+
+template<typename REAL_T, int group>
+std::istream& operator>>(std::istream& in, atl::Variable<REAL_T, group>& v) {
+    REAL_T r;
+    in>>r;
+    v = r;
+    return in;
+}
+
+
+
+
+#endif /* VARIABLE_HPP */

@@ -1,0 +1,852 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Journal Article
+% LaTeX Template
+% Version 1.3 (9/9/13)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% Original author:
+% Frits Wenneker (http://www.howtotex.com)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[oneside]{article}
+
+\usepackage{lipsum} % Package to generate dummy text throughout this template
+
+
+
+
+\usepackage[printwatermark]{xwatermark}
+\newwatermark[allpages,color=red!50,angle=45,scale=3,xpos=0,ypos=0]{DRAFT}
+\usepackage{makecell}
+\usepackage{pgfplots}
+\usepackage{color}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    linktoc=all,
+    citecolor=blue,
+    filecolor=blue,
+    linkcolor=blue,
+    urlcolor=blue
+}
+\usepackage{titlesec}
+
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{4}
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset { %
+    language=C++,
+    backgroundcolor=\color{black!5}, % set backgroundcolor
+    basicstyle=\footnotesize,% basic font setting
+}
+
+\usepackage{amsmath}
+\usepackage{graphicx} 
+\usepackage{wrapfig}
+\usepackage{forest}
+\usepackage{tikz}
+\usepackage{tikz-qtree}
+\usepackage{adjustbox}
+
+\newsavebox{\mysavebox}
+\newlength{\myrest}
+\usepackage{fix-cm}
+\usepackage{algorithm,algpseudocode,float}
+\usepackage{lipsum}
+\newcommand{\Code}[1]{%
+\lstinline{#1}}
+\usepackage[T1]{fontenc}
+\usepackage[many]{tcolorbox}
+\tcbuselibrary{listings}
+
+\newcommand{\Out}[1]{%
+\begin{lstlisting}[language=bash]
+#1
+\end{lstlisting}
+}
+\newtcblisting{cppsource}{
+  colback=white,
+  boxrule=0pt,
+  arc=0pt,
+  outer arc=0pt,
+  top=0pt,
+  bottom=0pt,
+  colframe=white,
+  listing only,
+ left=15.5pt,
+  enhanced,
+  listing options={
+    columns=flexible,
+    basicstyle=\small\ttfamily,
+    keywordstyle=\color{blue},
+    backgroundcolor=\color{black!4}, % set backgroundcolor
+    language=C++,
+    showstringspaces=false,
+    tabsize=2,
+  }
+}
+\newtcblisting{smallcppsource}{
+  colback=white,
+  boxrule=0pt,
+  arc=0pt,
+  outer arc=0pt,
+  top=0pt,
+  bottom=0pt,
+  colframe=white,
+  listing only,
+ left=15.5pt,
+  enhanced,
+  listing options={
+    columns=flexible,
+    basicstyle=\tiny\ttfamily,
+    keywordstyle=\color{blue},
+    backgroundcolor=\color{black!4}, % set backgroundcolor
+    language=C++,
+    showstringspaces=false,
+    tabsize=2,
+  }
+}
+
+\newtcblisting{myoutput}{
+  colback=white,
+  boxrule=0pt,
+  arc=0pt,
+  outer arc=0pt,
+  top=0pt,
+  bottom=0pt,
+  colframe=white,
+  listing only,
+  listing options={
+    basicstyle=\scriptsize\ttfamily\color{red},
+    breaklines=false,
+    columns=flexible,
+     backgroundcolor=\color{white}, % set backgroundcolor
+%    language=bash,
+  }
+}
+
+
+\newtcblisting{editnote}{
+  colback=white,
+  boxrule=0pt,
+  arc=0pt,
+  outer arc=0pt,
+  top=0pt,
+  bottom=0pt,
+  colframe=white,
+  listing only,
+  listing options={
+    basicstyle=\scriptsize\ttfamily,
+    breaklines=false,
+    columns=flexible,
+     backgroundcolor=\color{white}, % set backgroundcolor
+    language=bash,
+  }
+}
+
+\usepackage[sc]{mathpazo} % Use the Palatino font
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\linespread{1.05} % Line spacing - Palatino needs more space between lines
+\usepackage{microtype} % Slightly tweak font spacing for aesthetics
+
+\usepackage[hmarginratio=1:1,top=32mm,columnsep=20pt]{geometry} % Document margins
+\usepackage{multicol} % Used for the two-column layout of the document
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{float} % Required for tables and figures in the multi-column environment - they need to be placed in specific locations with the [H] (e.g. \begin{table}[H])
+\usepackage{hyperref} % For hyperlinks in the PDF
+
+\usepackage{lettrine} % The lettrine is the first enlarged letter at the beginning of the text
+\usepackage{paralist} % Used for the compactitem environment which makes bullet points with less space between them
+
+\usepackage{abstract} % Allows abstract customization
+\renewcommand{\abstractnamefont}{\normalfont\bfseries} % Set the "Abstract" text to bold
+\renewcommand{\abstracttextfont}{\normalfont\small\itshape} % Set the abstract itself to small italic text
+
+\usepackage{titlesec} % Allows customization of titles
+\renewcommand\thesection{\Roman{section}} % Roman numerals for the sections
+\renewcommand\thesubsection{\Roman{subsection}} % Roman numerals for subsections
+\titleformat{\section}[block]{\large\scshape\centering}{\thesection.}{1em}{} % Change the look of the section titles
+\titleformat{\subsection}[block]{\large}{\thesubsection.}{1em}{} % Change the look of the section titles
+
+\usepackage{fancyhdr} % Headers and footers
+\pagestyle{fancy} % All pages have headers and footers
+\fancyhead{} % Blank out the default header
+\fancyfoot{} % Blank out the default footer
+\fancyhead[C]{Efficient Higher-Order Reverse Mode Automatic Differentiation $\bullet$ May 2016 $\bullet$ Vol. XXI, No. 1} % Custom header text
+\fancyfoot[RO,LE]{\thepage} % Custom footer text
+
+
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{\vspace{-15mm}\fontsize{24pt}{10pt}\selectfont\textbf{Efficient Higher-Order Reverse Mode Automatic Differentiation}} % Article title
+
+\author{
+\large
+\textsc{Matthew R. Supernaw}\\[2mm] % Your name
+\normalsize National Oceanic Atmospheric Administration \\ % Your institution
+\normalsize National Marine Fisheries Service\\ % Your institution
+\normalsize \href{mailto:matthew.supernaw@noaa.gov}{matthew.supernaw@noaa.gov} \\ % Your email address
+\\
+%\textsc{Teresa A'mar, PhD}\\[2mm] % Your name
+%\normalsize National Oceanic Atmospheric Administration \\ % Your institution
+%\normalsize Office Of Science And Technology\\ % Your institution
+%\normalsize \href{mailto:teresa.amar@noaa.gov}{teresa.amar@noaa.gov} \\% Your email address
+%\vspace{-5mm}
+}
+\date{}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle % Insert title
+
+\thispagestyle{fancy} % All pages have headers and footers
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT
+%----------------------------------------------------------------------------------------
+
+\begin{abstract}
+
+\noindent
+The method of computing first-order partial derivatives in reverse mode has been well documented in literature. In this article we present an extension to the reverse mode automatic differentiation algorithm which allows us to compute higher-order mixed partial derivatives up to third-order. In addition, we introduce an implementation written in the C++ programing language. These higher-order mixed derivatives are particularly useful for optimization problems where gradients and/or Hessian matrices are needed. To demonstrate the usefulness of these algorithms, we'll show how the second and third-order derivatives are used in various scientific programming routines. 
+
+
+\end{abstract}
+
+%----------------------------------------------------------------------------------------
+%	ARTICLE CONTENTS
+%----------------------------------------------------------------------------------------
+
+
+\section{Introduction}
+
+
+\lettrine[nindent=0em,lines=3]{A}utomatic, or algorithmic, differentiation (AD) is a chain rule-based technique for evaluating derivatives
+of functions given as computer programs for their elimination \cite{griewank}.This technique exploits the fact that every computer program, no matter how complicated, executes a sequence of elementary arithmetic operations (addition, subtraction, multiplication, division, etc.) and elementary functions (exp, log, sin, cos, etc.) \cite{wiki_ad}. In this section, we provide a very basic description of automatic differentiation. Compared to finite-difference techniques, AD has proven to be more efficient for accurately computing partial derivatives. \\
+
+At the heart of AD is the chain rule. Recall from calculus, the chain rule is a method for computing the derivative of two or more functions:\\
+ \begin{equation}
+ y = f(g(x)) 
+ \end{equation}
+  \\
+ with \textit{y=f(g(x))} as the outer function and \textit{g(x)} as the inner function. \\ 
+ \\
+ \textbf{Chain Rule:} \\ \\
+  \begin{equation}
+ \textit{f(g(x))' = g'(x) f'(g(x))} \\
+ \end{equation}
+ or \\
+\begin{equation}
+\frac{df}{dx} = \frac{dg}{dx}\frac{df}{dg}
+\end{equation}
+\\
+with \textit{$\frac{df}{dg}$} as the outer derivative and \textit{$\frac{dg}{dx}$} as the inner derivative. \\
+
+\begin{editnote}
+Why is it useful?
+Who uses AD?
+\end{editnote}
+                 
+
+\section{Forward Mode}
+Forward mode (or the tangent linear method) AD traverses the chain rule from inside to outside. That is, from (3),  \textit{$\frac{df}{dg}$} is computed before \textit{$\frac{dg}{dx}$}. To demonstrate how the forward accumulation of the chain rule works, consider the expressions $f(x_1,x_2) = ln(x_1x_2)$. Here $g(x_1,x_2) = x_1x_2$ and $f(x_1,x_2) = ln(g(x_1,x_2))$. So, to find the gradient $\nabla f(x_1,x_2) $ we must evaluate $f(x_1,x_2)$ and record these operations to a "Tape" so we can evaluate the partial derivatives later.\\
+\\
+\begin{tikzpicture}
+\node[right]  (zero) at (-3, 0) {\textbf{Evaluation}} ;
+\node[right]  (one) at (3, 0) {\textbf{Tape}} ;
+\node[right]  (zero) at (-3, -.5) { \small \textit{$x_1 = 3.1459$}};
+\node[right]  (zero) at (3, -.5) { \small \textit{$x_1' = 0.0$}};
+\node[right]  (zero) at (-3, -1) { \small \textit{$x_2 = 2.0$}};
+\node[right]  (zero) at (3, -1) { \small \textit{$x_2' = 0.0$}};
+\node[right]  (zero) at (3, -1.5) { \small \textit{---------------}};
+\node[right]  (zero) at (-3, -1.5) { \small \textit{---------------}};
+\node[right]  (zero) at (-3, -2) { \small \textit{$g(x_1,x_2) = x_1x_2$}};
+\node[right]  (zero) at (3, -2) { \small \textit{$g(x_1,x_2)' = x_1'x_2 + x_1x_2'$}};
+\node[right]  (zero) at (-3, -2.5) { \small \textit{$f(g(x_1,x_2)) =ln(g(x_1,x_2))$}};
+\node[right]  (zero) at (3, -2.5) { \small \textit{$f(g(x_1,x_2))' = \frac{g(x_1,x_2)'}{g(x_1,x_2)}$}};
+\node[right]  (astart2) at (-4, 0) {} ;
+\node[right]  (aend2) at (-4,-2.5) {} ;
+\draw[->,solid,line width=1mm,fill=red] (astart2) -- (aend2);
+\end{tikzpicture}
+\\
+\\
+Now that we have a record of $f(x_1,x_2)$ on the "Tape", we can apply the forward mode accumulation of the chain rule and compute the gradient:
+\\
+\\
+\begin{tikzpicture}
+\node[right]  (zero) at (-3, 1.5) {\textbf{Let $\nabla f(x_1,x_2) = [x_1',x_2']$}} ;
+\node[right]  (zero) at (-3, .5) {\textbf{Compute: $x_1'$} };
+\node[right]  (one) at (-3, 0) {\textbf{Tape}} ;
+\node[right]  (zero) at (-3, -.5) { \small \textit{$x_1' = 1.0 \textbf{(seed)}$}};
+\node[right]  (zero) at (-3, -1) { \small \textit{$x_2' = 0.0$}};
+\node[right]  (zero) at (-3, -1.5) { \small \textit{---------------}};
+\node[right]  (zero) at (-3, -2) { \small \textit{$g(x_1,x_2)' = x_1'x_2 + x_1x_2' = 1.0*2.0+ 3.1459*0 = 2.0$}};
+\node[right]  (zero) at (-3, -2.8) { \small \textit{$f(g(x_1,x_2))' = \frac{g(x_1,x_2)'}{g(x_1,x_2)} = \frac{2.0}{2.0*3.1459} = 0.317874$}};
+\node[right]  (astart) at (-4, 0) {} ;
+\node[right]  (aend) at (-4,-2.8) {} ;
+\draw[->,solid,line width=1mm,fill=red] (astart) -- (aend);
+\node[right]  (zero) at (-3, -4.5) {\textbf{Compute: $x_2'$} };
+\node[right]  (one) at (-3, -5) {\textbf{Tape}} ;
+\node[right]  (zero) at (-3, -5.5) { \small \textit{$x_1' = 0.0$}};
+\node[right]  (zero) at (-3, -6) { \small \textit{$x_2' = 1.0 \textbf{(seed)}$}};
+\node[right]  (zero) at (-3, -6.5) { \small \textit{---------------}};
+\node[right]  (zero) at (-3, -7) { \small \textit{$g(x_1,x_2)' = x_1'x_2 + x_1x_2' = 0.0*2.0+ 3.1459*1.0 = 3.1459$}};
+\node[right]  (zero) at (-3, -7.8) { \small \textit{$f(g(x_1,x_2))' = \frac{g(x_1,x_2)'}{g(x_1,x_2)} = \frac{3.1459}{2.0*3.1459} = 0.5$}};
+\node[right]  (astart2) at (-4, -5) {} ;
+\node[right]  (aend2) at (-4,-7.8) {} ;
+\draw[->,solid,line width=1mm,fill=red] (astart2) -- (aend2);
+\node[right]  (zero) at (-3, -8.8) {\textbf{Gives:}} ;
+\node[right]  (zero) at (-3, -9.8) {\textbf{$\nabla f(x_1,x_2) = [\frac{df}{dx_1},\frac{df}{dx_2}] = [0.317874,0.5]$}} ;
+\end{tikzpicture}
+\\
+\\
+The above "Tape" evaluation can be generalized algorithmically by:\\
+\\
+\\
+\newpage
+ \begin{algorithm}
+  \caption{Forward Mode Accumulation}
+  \begin{algorithmic}[1]
+\State $\hat{w} = [ x_1',x_2',x_3'...x_m']$ 
+\For{$i = 1$ to ${m}$}
+\State $\hat{w}[i] = 1.0$ 
+\For{$j = 1$ to ${n}$}
+\State $Tape[j]\rightarrow Evaluate$ 
+\EndFor
+\State $\nabla f[i] = Tape[n]\rightarrow Value$
+\State  $\hat{w}[i] = 0.0$ 
+\EndFor
+\end{algorithmic}
+ \end{algorithm}
+
+As you can see from Algorithm 1, for a function $f(x_1,x_2..., x_m)$ the "Tape" must be evaluated \textit{m} times to compute the gradient. For highly parameterized functions, it may be desirable to compute the gradient using reverse mode accumulation.
+
+
+\section{Reverse Mode}
+\subsubsection{Reverse Mode}
+Reverse mode (or the adjoint method) AD traverses the chain rule from outside to inside. That is, from (3),  \textit{$\frac{dg}{dx}$} is computed before \textit{$\frac{df}{dg}$}. It works by accumulating a series of adjoints in the opposite direction of the forward mode method. This can be generalized by the following algorithm:
+\begin{algorithm*}
+  \caption{Reverse Mode Accumulation \cite{griewank2}}
+  \begin{algorithmic}[1]
+\State \textbf{Input:} \textit{Tape} 
+\State $\bar{w} = [\bar{ x_1},\bar{x_2},\bar{x_3}...\bar{x_{m-1}}] = 0$ 
+\State $\bar{w}[m] = 1$
+\For{$i = m$ to ${1}$}
+\State $\bar{w_i}=\bar{w}[i]$
+\State $\bar{w}[i] = 0$
+\For{$j = 1$ to ${i}$}
+\State $\bar{w}[j] +=  \frac{\partial \phi_i}{\partial x_i}\bar{w_i}$
+\EndFor
+\EndFor
+\State \textbf{Output:} $\nabla f = \bar{w} =  [\bar{ x_1},\bar{x_2},\bar{x_3}...\bar{x_{m}}]$
+\end{algorithmic}
+ \end{algorithm*}
+ 
+To demonstrate the reverse mode method, lets revisit our example from the forward mode description in the previous section with slight modifications to the "Tape" in order to represent the partial derivative entries, also know as adjoints. \\
+ \begin{tikzpicture}
+\node[right]  (zero) at (-3, 0) {\textbf{Evaluation}} ;
+\node[right]  (one) at (3, 0) {\textbf{Tape}} ;
+\node[right]  (zero) at (-3, -.5) { \small \textit{$x_1 = 3.1459$}};
+\node[right]  (zero) at (3, -.5) { \small \textit{$x_1' = 0.0$}};
+\node[right]  (zero) at (-3, -1) { \small \textit{$x_2 = 2.0$}};
+\node[right]  (zero) at (3, -1) { \small \textit{$x_2' = 0.0$}};
+\node[right]  (zero) at (3, -1.5) { \small \textit{---------------}};
+\node[right]  (zero) at (-3, -1.5) { \small \textit{---------------}};
+\node[right]  (zero) at (-3, -2) { \small \textit{$g(x_1,x_2) = x_1x_2$}};
+\node[right]  (zero) at (3, -2) { \small \textit{$x_3'=g(x_1,x_2)' = [[x_1',\frac{\partial g}{\partial x_1} = 1.0*2.0],[ x_2',\frac{\partial g}{\partial x_2} = 1.0*3.1459]]$}};
+\node[right]  (zero) at (-3, -2.5) { \small \textit{$ f(g(x_1,x_2)) =ln(g(x_1,x_2))$}};
+\node[right]  (zero) at (3, -2.5) { \small \textit{$x_4' = f(g(x_1,x_2))' = [g(x_1,x_2)' ,\frac{\partial f}{\partial x_3} = (2.0*3.1459)^{-1}]$}};
+\node[right]  (astart2) at (-4, 0) {} ;
+\node[right]  (aend2) at (-4,-2.5) {} ;
+\draw[->,solid,line width=1mm,fill=red] (astart2) -- (aend2);
+\end{tikzpicture}
+
+Now we have a tape that contains entries that each have a list of adjoints to use in the reverse mode calculation. By traversing the tape from the bottom up, we can easily compute the full gradient in one sweep using \textbf{Algorithm 2}:\\
+
+ \begin{tikzpicture}
+\node[right]  (one) at (-3, 0) {$\nabla f =  \bar{w} =  [\bar{ x_1},\bar{x_2},\bar{x_3}, \bar{x_4}]$};
+\node[right]  (one) at (-3, -.5) {\textbf{Tape}} ;
+\node[right]  (one) at (5.5, -.5) {\textbf{Trace}} ;
+\node[right]  (one) at (-3, -1) {\textbf{m = 2}  \small // last elementary operation} ;
+\node[right]  (one) at (-3, -1.5) {$\bar{w}[m] = 1 \small \textbf{(seed)}$};
+\node[right]  (one) at (-3, -2) {----------------------------------------------------};
+\node[right]  (one) at (-3, -2.5) {\textbf{i = m = 2}};
+\node[right]  (one) at (-3, -3) {$\bar{w_i} =\bar{w}[i] $};
+\node[right]  (one) at (-3, -3.5) {$\bar{w}[i]  = 0$};
+\node[right]  (one) at (-3, -4) {$\bar{w}[3] += \bar{w_i}\frac{\partial f}{\partial x_3} = 1*(2.0*3.1459)^{-1} = 0.159$};
+\node[right]  (one) at (5.5, -2.75) {$\nabla f =  \bar{w} =  [0,0, 0.159,0]$};
+\node[right]  (one) at (-3, -4.5) {----------------------------------------------------};
+\node[right]  (one) at (-3, -5) {\textbf{i = m-1 = 1}};
+\node[right]  (one) at (-3, -5.5) {$\bar{w_i}=\bar{w}[i] $};
+\node[right]  (one) at (-3, -6) {$\bar{w}[i]  = 0$};
+\node[right]  (one) at (-3, -6.5) {$\bar{w}[1] += \bar{w_i}\frac{\partial g}{\partial x_1}= 0.159*2.0 = 0.317874$};
+\node[right]  (one) at (-3, -7) {$\bar{w} [2]+= \bar{w_i}\frac{\partial g}{\partial x_2} = 0.159*3.1459 = 0.5$};
+\node[right]  (one) at (5.5, -6) {$\nabla f =  \bar{w} =  [0.317874,0.5, 0,0]$};
+\node[right]  (one) at (-3, -7.5) {----------------------------------------------------};
+\node[right]  (one) at (-3, -8) {\textbf{Final Result: }$\nabla f =  [0.317874,0.5, 0,0]$};
+\node[right]  (astart2) at (-4, -2) {} ;
+\node[right]  (aend2) at (-4,-7.5) {} ;
+\draw[->,solid,line width=1mm,fill=red] (astart2) -- (aend2);
+\end{tikzpicture}
+
+Reverse mode requires only one sweep to compute all the partials for a function $f(x_1,x_2..., x_m)$, therefore it is more efficient for functions having $m > 1$ variables.
+
+\section{Higher-Order Reverse Mode}
+\begin{editnote}
+Why is it useful?
+Why isn't it as simple as first-order reverse mode?
+\end{editnote}
+
+In nonlinear optimization problems, in particular those using some variation of the Newton method, one must evaluate either the exact or an approximation of the Hessian matrix at each iteration. The Hessian matrix is a square matrix of all the second-order partial derivatives for a function. It describes the local curvature of a function of many variables \cite{wiki_hessian}. In some statistical computing routines, such as mixed effects problems using the Laplace Transformation method, third-order mixed partials are required. In either case, it is desirable to calculate these derivatives in the most efficient manner possible, as problems involving a high number of parameters can easily become arduous if using a finite differences method or even a forward mode automatic differentiation routine. \\
+At first glance, it may seem the solution is to simply differentiate Algorithm 2, but this will neglect to account for important nonlinear interactions as Gowler, et. al. have demonstrated with their "Edge-Pushing" algorithm \cite{gowler_ep}.  This observation is an important contribution to the research of higher-order reverse mode automatic differentiation and has been tremendously insightful in the development of our algorithm. 
+
+
+
+\subsection{Nonlinear Interactions}
+A nonlinear interaction can be defined at the expression level as an interaction of variables in the linear portion of an expression with those that are nonlinear.  For example:
+
+\begin{equation}
+ f(x,y,z) = \frac{x*y}{e^z}
+\end{equation}
+
+Here $x$ and $y$ interact with the nonlinear expression $e^{z}$, therefore $x$ and $y$ are said to have a nonlinear interaction with $z$. These nonlinear interactions must be accounted for in the reverse mode accumulation of order greater than one. To satisfy this requirement, we must update Algorithm 2 in order to accommodate these nonlinear dependencies. This means, whenever $x$ and $y$ are found at the statement level, $z$ will accompany them and vice versa. Furthermore, a variable resulting from the evaluation of $f(x,y,z)$ will also be considered nonlinear as it is the result of a nonlinear expression. This means anytime the resulting dependent variable is used, it will be considered nonlinear, just as the expression $e^{z}$  is in the above equation.  
+
+\begin{editnote}
+What is a nonlinear interaction?
+Why is it important to track them?
+\end{editnote}
+
+\subsection{Second-Order Reverse Mode}
+Given the observation of nonlinear interactions, we are now able to differentiate and expand on Algorithm 2 in order to account for any nonlinear interactions that may have occurred at the statement level. To do this, we introduce the idea of variable sets at each entry in the "Tape" structure. Recall a set is a list of unique entries. These sets not only hold variables that were found in the evaluated statement, but also those that have nonlinear interaction with any of the statement level variables. Before each entry in the "Tape" is evaluated, we prepare the entry by combining the variables from the expression statement with those that have nonlinear interactions with variables found at the statement level. This procedure occurs whenever a "=" operator is found.  The result is a concise list of variable information required to properly accumulate the higher-order derivatives for that entry. In addition, after the entry has been evaluated during the reverse mode accumulation, it is also necessary to add the statement level variables into the next entry to be evaluated. This leads us to Algorithm 3. \\
+\newpage
+
+\begin{algorithm*}[!htb]
+  \caption{Reverse Mode With Hessian Accumulation}
+  \begin{algorithmic}[1]
+\State \textbf{Input:} \textit{Tape} \\
+% [\bar{ x_1},\bar{x_2},\bar{x_3}...\bar{x_{m-1}}] 
+\State $\nabla f = \bar{w}[m] = 0$ 
+\State $\nabla^2 f =  \bar{h}[m][m] = 0$ 
+%\State  $\bar{h} = \left| \begin{array}{ccccc}
+%\frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1 \partial x_2} & \frac{\partial^2 f}{\partial x_1 \partial x_3} & ... & \frac{\partial^2 f}{\partial x_1 \partial x_m} \\
+%\frac{\partial^2 f}{\partial x_2^2} & \frac{\partial^2 f}{\partial x_2 \partial x_2} & \frac{\partial^2 f}{\partial x_2 \partial x_3} & ... & \frac{\partial^2 f}{\partial x_2 \partial x_m}  \\
+%\frac{\partial^2 f}{\partial x_3^2} & \frac{\partial^2 f}{\partial x_3 \partial x_2} & \frac{\partial^2 f}{\partial x_3 \partial x_3} & ... & \frac{\partial^2 f}{\partial x_3 \partial x_m} \\
+%. & . & . & ... & . \\
+%. & . & . & ... & . \\
+%. & . & . & ... & . \\
+%\frac{\partial^2 f}{\partial x_m^2} & \frac{\partial^2 f}{\partial x_m \partial x_2} & \frac{\partial^2 f}{\partial x_m \partial x_3} & ... & \frac{\partial^2 f}{\partial x_m \partial x_m} \\
+%  \end{array} \right| = 0$ \\
+\State $\bar{w}[m] = 1$ \\
+\For{$i = m$ to ${1}$}
+\State $\bar{w_i}=\bar{w}[i]$
+\State $\bar{w}[i] = 0$
+\State $\bar{h}_{ii}=\bar{h}[i][i]$
+\State $\bar{h}[i][i] = 0$
+\State n = size(variable set) \\
+\For{$j = 1$ to ${n}$}
+\State $\bar{H}[i][j] = \bar{h}[i][j]$
+\State $\bar{h}[i][j] = 0$
+\EndFor \\
+\For{$j = 1$ to ${n}$}
+\State $\bar{w}[j] +=  \frac{\partial \phi_i}{\partial x_i}\bar{w_i}$
+\For{$k = 1$ to ${n}$}
+\State  $\bar{h}[j][k] += \bar{H}[i][k]  \frac{\partial  \phi_i}{\partial x_j} + \bar{H}[i][j]  \frac{\partial  \phi_i}{\partial x_k}+\bar{h}_{ii}\frac{\partial  \phi_i}{\partial x_k} \frac{\partial  \phi_i}{\partial x_j} + \bar{w_i}\frac{\partial^2  \phi_i}{\partial x_j \partial x_k}$
+\EndFor
+\EndFor
+\If i > 1
+\State Push statement level variables to entry[i-1].
+\EndIf
+\EndFor
+%\State \textbf{Output:}  \\ 
+%\State $\nabla f = \bar{w}[m] $ \\
+%\State $\nabla^2 f =  \bar{h}[m][m]$ \\
+% $\nabla f = \bar{w} =  [\bar{ x_1},\bar{x_2},\bar{x_3}...\bar{x_{m}}]$\\
+%\State  $\nabla f^2 =\bar{h} = \left| \begin{array}{ccccc}
+%\frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1 \partial x_2} & \frac{\partial^2 f}{\partial x_1 \partial x_3} & ... & \frac{\partial^2 f}{\partial x_1 \partial x_m} \\ \\
+%\frac{\partial^2 f}{\partial x_2^2} & \frac{\partial^2 f}{\partial x_2 \partial x_2} & \frac{\partial^2 f}{\partial x_2 \partial x_3} & ... & \frac{\partial^2 f}{\partial x_2 \partial x_m}  \\
+%\frac{\partial^2 f} {\partial x_3^2} & \frac{\partial^2 f}{\partial x_3 \partial x_2} & \frac{\partial^2 f}{\partial x_3 \partial x_3} & ... & \frac{\partial^2 f}{\partial x_3 \partial x_m} \\
+%. & . & . & ... & . \\
+%. & . & . & ... & . \\
+%. & . & . & ... & . \\
+%\frac{\partial^2 f}{\partial x_m^2} & \frac{\partial^2 f}{\partial x_m \partial x_2} & \frac{\partial^2 f}{\partial x_m \partial x_3} & ... & \frac{\partial^2 f}{\partial x_m \partial x_m} \\
+%  \end{array} \right|$
+\end{algorithmic}
+ \end{algorithm*}
+ 
+As you can see from Algorithm 3, we obtain not only the second-order mixed partials, but the gradient as well.  To properly evaluate Algorithm 3, we are required to have the computational graph for each expression statement. Having this computational graph gives us all the tools and information we need to build any nonlinear interaction list that may be required. In addition, the computational graph gives us the opportunity to omit any temporary variables that arise from function evaluations in the expression. Furthermore, it allows us to compute local derivatives for any variables that are in the expression and they are our adjoint entries. Figure 1 shows an example of what happens during a second-order statement level evaluation involving nonlinear interactions. \\
+\\
+
+\newpage
+\begin{figure}
+\centering
+
+
+
+
+\begin{tikzpicture}[level/.style={sibling distance=20mm/#1}]
+\node[right]  (one) at (-5,2) {\makecell[l]{\textbf{1. Evaluate and create the graph} \\ \textbf{$g = f(x,y,z) = \frac{x*y}{e^z}$}}} ;
+\node [circle,draw] at (-3,0)(a) {$/$}
+child {node [circle,draw] (b) {$*$}
+child {node [circle,draw] (c) {$x$}}
+child {node [circle,draw] (d) {$y$}}
+}
+child {node [circle,draw] (e) {$exp$}
+child {node [circle,draw] (f) {$z$}}
+};
+
+
+\node[right]  (one) at (1.5,2) {\makecell[l]{\textbf{2. Retrieve next "Tape" entry and} \\ \textbf{create statement level variable set}}};
+\node [circle,draw] at (3.5,0)(aa) {$/$}
+child {node [circle,draw] (bb) {$*$}
+child {node [circle,draw, fill = red] (cc) {$x$}}
+child {node [circle,draw, fill = red] (dd) {$y$}}
+}
+child {node [circle,draw] (ee) {$exp$}
+child {node [circle,draw, fill = red] (ff) {$z$}}
+};
+
+\node[draw,draw=white] at (5,0) {\tiny \makecell[l]{\textit{Variable Set:} \\ \textit{[x0,x1,x2]}}};
+
+
+
+
+\node[right]  (one) at (-5,-5) {\makecell[l]{\textbf{3. Create nonlinear} \\ \textbf{interaction sets}}} ;
+\node [circle,draw,fill=red] at (-3,-6)(aa) {$/$}
+child {node [circle,draw] (bb) {$*$}
+child {node [circle,draw] (cc) {$x$}}
+child {node [circle,draw] (dd) {$y$}}
+}
+child {node [circle,draw] (ee) {$exp$}
+child {node [circle,draw] (ff) {$z$}}
+};
+\path[draw,thick, densely dotted,bend right] (cc) edge (dd);
+\path[draw,thick, densely dotted,bend right] (dd) edge (ff);
+\path[draw,thick, densely dotted,bend right] (cc) edge (ff);
+
+\node[draw,draw=white] at (-.5,-6) {\tiny \makecell[l]{\textit{Nonlinear interactions:} \\ x0: [x2] \\ x1: [ x2]  \\  x2: [ x0,x1]}};
+%\node[draw,draw=white] at (12,0) {Nonlinear  dependencies: };
+%\node[draw,draw=white] at (12,-.5) {x0: [x2]};
+%\node[draw,draw=white] at (12,-1) {x1: [ x2]};
+%\node[draw,draw=white] at (12,-1.5) {x2: [ x0,x1]};
+\node[right]  (astart1) at (-1, -1.5) {} ;
+\node[right]  (aend1) at (1,-1.5) {} ;
+\draw[->,solid,line width=1mm,fill=red] (astart1) -- (aend1);
+
+\node[right]  (astart2) at (5.5, -1.5) {} ;
+\node[right]  (aend2) at (7.5,-1.5) {} ;
+\draw[->,solid,line width=1mm,fill=red] (astart2) -- (aend2);
+
+
+\node[right]  (astart3) at (-1, -7.5) {} ;
+\node[right]  (aend3) at (1,-7.5) {} ;
+\draw[->,solid,line width=1mm,fill=red] (astart3) -- (aend3);
+
+\node[right]  (one) at (1.5,-5) {\makecell[l]{\textbf{4. Evaluate forward mode} \\ \textbf{local derivatives (adjoints)}}} ;
+\node [circle,draw] at (3.5,-6)(aaa) {$/$}
+child {node [circle,draw] (bbb) {$*$}
+child {node [circle,draw] (ccc) {$x$}}
+child {node [circle,draw] (ddd) {$y$}}
+}
+child {node [circle,draw] (eee) {$exp$}
+child {node [circle,draw] (fff) {$z$}}
+};
+
+\node[right]  (one) at (5,-6) {\tiny \makecell[l]{\textit{Local Gradient:} \\ \textit{|$\frac{y}{e^{x}}$ , $\frac{x}{e^{x1}}$, $\frac{-(log(e)*x*y)}{e^{z}}$|}}} ;
+
+\node[right]  (one) at (5,-7) {\tiny \makecell[l]{\textit{Local Hessian:} \\ \textit{|$0$, $\frac{1}{e^{z}}$ , $\frac{-(log(e)*y)}{e^{z}}$|} \\ \textit{|$\frac{1}{e^{z}}$, $0$ , $\frac{-(log(e)*x)}{e^{z}}$|} \\ \textit{|$\frac{-(log(e)*y)}{e^{z}}$ , $\frac{-(log(e)*x)}{e^{z}}$ , $\frac{(log(e)^2*x*y)}{e^z}$|}}} ;
+
+
+
+
+\end{tikzpicture}
+\caption{The evaluation sequence at the statement level resulting in a second-order entry into the derivative structure, or "Tape". If no nonlinear interactions are found, step 3 is simply omitted.} 
+\end{figure}
+ \begin{editnote}
+Insert computational graph example showing nonlinear interactions.
+\end{editnote}
+
+For a detailed trace of the evaluation and derivative accumulation for the expression in \textbf{Figure 1}, see \textbf{Appendix 1}.
+
+
+\subsection{Third-Order Reverse Mode}
+Continuing the observation of nonlinear interactions and differentiating Algorithm 3 leads us to Algorithm 4 for third-order reverse mode accumulation. The results from the third-order algorithm gives us the gradient, Hessian, and the third-order mixed partial derivatives of our objective function. 
+
+\clearpage
+
+\begin{algorithm*}[!htb]
+  \caption{Third-Order Reverse Mode Accumulation}
+  \begin{algorithmic}[1]
+\State \textbf{Input:} \textit{Tape} 
+\State $\nabla f = \bar{w}[m] = 0$ 
+\State $\nabla^2 f =  \bar{h}[m][m] = 0$ 
+\State $\nabla^3 f =  \bar{d}[m][m][m] = 0$ \\
+
+\State $\bar{w}[m] = 1$
+\For{$i = m$ to ${1}$}
+\State $\bar{w_i}=\bar{w}[i]$
+\State $\bar{w}[i] = 0$
+\State $\bar{h}_{ii}=\bar{h}[i][i]$
+\State $\bar{h}[i][i] = 0$
+\State $\bar{d}_{iii}=\bar{d}[i][i][i]$
+\State $\bar{d}[i][i][i] = 0$
+\State n = size(variable set) \\
+\For{$j = 1$ to ${n}$}
+\State $\bar{H}[i][j] = \bar{h}[i][j]$
+\State $\bar{h}[i][j] = 0$
+\For{$k = 1$ to ${n}$}
+\State $\bar{D}[i][j][k] = \bar{d}[i][j][k]$
+\State $\bar{d}[i][j][k] = 0$
+\EndFor
+\EndFor \\
+\For{$j = 1$ to ${n}$}
+\State $\bar{w}[j] +=  \frac{\partial \phi_i}{\partial x_i}\bar{w}[i]$
+\For{$k = 1$ to ${n}$}
+\State  $\bar{h}[j][k] += \bar{h}[i][k]  \frac{\partial \phi_i}{\partial x_j} + \bar{h}[i][j]  \frac{\partial \phi_i}{\partial x_k}+\bar{h}[i][i]  \frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_j} + \bar{w_i}\frac{\partial^2 \phi_i}{\partial x_j \partial x_k}$
+\For{$l = 1$ to ${n}$}
+\State  \begin{varwidth}[t]{\linewidth}  $\bar{d}[j][k][l] +=  \frac{\partial \phi_i}{\partial x_j}\bar{D}[i][k][l] + \frac{\partial \phi_i}{\partial x_k}\bar{D}[i][j][l]+ \frac{\partial \phi_i}{\partial x_l}\bar{D}[i][j][k]+$ \par \hskip\algorithmicindent  $\frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_k}\bar{D}[i][i][l] + \frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_l}\bar{D}[i][i][k]+ \frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_l}\bar{D}[i][i][j]+$ \par \hskip\algorithmicindent $ \frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_l}\bar{d}_{iii}+$ \par \hskip\algorithmicindent $\frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_k}\bar{H}[i][l] + \frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_l}\bar{H}[i][k]+\frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_l}\bar{H}[i][j] +$\par \hskip\algorithmicindent $ [\frac{\partial \phi_i}{\partial x_j}\frac{\partial^2 \phi_i}{\partial x_k \partial x_l} +\frac{\partial^2 \phi_i}{\partial x_k}\frac{\partial^2 \phi_i}{\partial x_j \partial x_l} + \frac{\partial^2 \phi_i}{\partial x_l}\frac{\partial^2 \phi_i}{\partial x_j \partial x_k}]\bar{h}_{ii} +$\par \hskip\algorithmicindent $\bar{w_i}\frac{\partial^3 \phi_i}{\partial x_j \partial x_k \partial x_l}$ 
+\end{varwidth}
+\EndFor
+\EndFor
+\EndFor
+\If i > 1
+\State Push statement level variables to entry[i-1].
+\EndIf
+\EndFor
+%\State  \\
+%\State \textbf{Output:}  \\ 
+%\State $\nabla f = \bar{w}[m] $ 
+%\State $\nabla^2 f =  \bar{h}[m][m]$ 
+%\State $\nabla^3 f =  \bar{d}[m][m][m] $ 
+  
+\end{algorithmic}
+ \end{algorithm*}
+ 
+
+ 
+\begin{editnote}
+Third order reverse mode description.
+\end{editnote}
+
+\section{Implementation in C++}
+We have chosen to implement our framework for automatic differentiation in the C++ programming language. Being a object oriented language, C++ makes it easy for us to build the computational graphs required at each statement evaluation. C++ also has the added benefit of providing a mechanism for operator overloading, making it easy to implement algorithms just as if they were using native data types like float or double.
+
+\begin{editnote}
+Why C++?
+\end{editnote}
+
+\section{Conclusions}
+\begin{editnote}
+Talk about the benefits and limitations of the algorithm.
+\end{editnote}
+
+\section{Appendix 1}
+What follows is an example trace of an objective function evaluation and the accumulation of first and second-order derivatives. \\
+\\
+\textbf{Given: } \\
+$x$ = 3.1459 \\
+$y$ = 1.5   \\
+$z$ = 2.4  \\
+\\
+\textbf{Evaluate:} \\
+$g = x*y$ \\ 
+$f  = \frac{g}{e^z}$
+
+ \begin{tikzpicture}
+\node[right]  (zero) at (-3, 0) {\textbf{Evaluation}} ;
+\node[right]  (one) at (3, 0) {\textbf{Tape}} ;
+\node[right]  (zero) at (-3, -.5) { \small \textit{$x = 3.1459$}};
+\node[right]  (zero) at (3, -.5) { \small \textit{$x' = 0.0$}};
+\node[right]  (zero) at (-3, -1) { \small \textit{$y = 1.5$}};
+\node[right]  (zero) at (3, -1) { \small \textit{$y' = 0.0$}};
+\node[right]  (zero) at (-3, -1.5) { \small \textit{$z = 2.4$}};
+\node[right]  (zero) at (3, -1.5) { \small \textit{$z' = 0.0$}};
+\node[right]  (one) at (4.5, -1) {\small $ \left| \begin{array}{ccccc}\frac{\partial^2 f}{\partial x \partial x} &\frac{\partial^2 f}{\partial x \partial y} &\frac{\partial^2 f}{\partial x \partial z} \\ \frac{\partial^2 f}{\partial y \partial x} &\frac{\partial^2 f}{\partial y \partial y} &\frac{\partial^2 f}{\partial y \partial z} \\ \frac{\partial^2 f}{\partial z \partial x} &\frac{\partial^2 f}{\partial z \partial y} &\frac{\partial^2 f}{\partial z \partial z} \\ \end{array}  \right| = 0$};
+\node[right]  (zero) at (3, -2) { \small \textit{-------------------------------------------------------}};
+\node[right]  (zero) at (-3, -2) { \small \textit{---------------}};
+\node[right]  (zero) at (-3, -2.5) { \small \textit{$g = x*y$}};
+\node[right]  (zero) at (3, -2.5) { \small \textit{Varaible Set[x, y]}};
+\node[right]  (zero) at (3, -3) { \small \textit{Nonlinear Interactions: None}};
+\node[right]  (zero) at (3, -3.5) { \small \textit{Tape Entry = 1}};
+\node[right]  (zero) at (3, -4) { \small \textit{Local Derivatives:}};
+\node[right]  (zero) at (3, -5) { \small \makecell[l]{\textit{$\nabla g =$} \\ \textit{$[[x',\frac{\partial g}{\partial x} = 1.0*1.5.0],[ y',\frac{\partial g}{\partial y} = 1.0*3.1459]]$}}};
+\node[right]  (zero) at (3, -6.5) { \small \makecell[l]{\textit{$\nabla^2 g =$} \\ \textit{$[[x'',\frac{\partial^2 g}{\partial x^2} = 0],[ x'y',\frac{\partial^2 g}{\partial x\partial y} = 1.0]]$}, \\  \textit{$[[y'x',\frac{\partial^2 g}{\partial y\partial x} = 1.0],[ y'y',\frac{\partial^2 g}{\partial y^2} = 0]]$}}};
+\node[right]  (zero) at (3, -7.5) { \small \textit{-------------------------------------------------------}};
+\node[right]  (zero) at (-3, -7.5) { \small \textit{---------------}};
+\node[right]  (zero) at (-3, -8) { \small \textit{$f = \frac{g}{e^z}$}};
+\node[right]  (zero) at (3, -8) { \small \textit{Varaible Set[g , z]}};
+\node[right]  (zero) at (3, -8.5) { \small \textit{Nonlinear Interactions: g[z], z[g]}};
+\node[right]  (zero) at (3, -9) { \small \textit{Tape Entry = 2}};
+\node[right]  (zero) at (3, -9.5) { \small \textit{Local Derivatives:}};
+\node[right]  (zero) at (3, -10.5) { \small \makecell[l]{\textit{$\nabla f =$} \\ \textit{$[[\frac{\partial f}{\partial g} = 1/e^z = 0.09],[\frac{\partial f}{\partial z} = -(log(e)*g)/e^z = -0.43]]$}}};
+\node[right]  (zero) at (3, -12) { \small \makecell[l]{\textit{$\nabla^2 g =$} \\ \textit{$[[\frac{\partial^2 f}{\partial g^2} = 0],[\frac{\partial^2 g}{\partial g\partial z} = -log(e)/e^z = -0.09]]$}, \\  \textit{$[[\frac{\partial^2 f}{\partial z\partial g} =-log(e)/e^z =  -0.09 ],[\frac{\partial^2 f}{\partial z^2} = (log(e)^2*g)/e^z = 0.43]]$}}};
+\node[right]  (zero) at (3, -13.5) { \small \textit{-------------------------------------------------------}};
+\node[right]  (zero) at (-3, -13.5) { \small \textit{---------------}};
+%\node[right]  (zero) at (-3, -2.5) { \small \textit{$ f(g(x_1,x_2)) =ln(g(x_1,x_2))$}};
+%\node[right]  (zero) at (3, -2.5) { \small \textit{$x_4' = f(g(x_1,x_2))' = [g(x_1,x_2)' ,\frac{\partial f}{\partial x_3} = (2.0*3.1459)^{-1}]$}};
+\node[right]  (astart2) at (-4, 0) {} ;
+\node[right]  (aend2) at (-4,-13) {} ;
+\draw[->,solid,line width=1mm,fill=red] (astart2) -- (aend2);
+\end{tikzpicture}
+
+
+\begin{lrbox}{\mysavebox}%
+\begin{tikzpicture}
+\node[right]  (one) at (-3, 5) {\textbf{Reverse Accumulation}}; 
+
+\node[right]  (one) at (-3, 4) {$\nabla f  = w  =  |\frac{\partial f}{\partial x }, \frac{\partial f}{\partial y },  \frac{\partial f}{\partial z}, \frac{\partial f}{\partial g}, \frac{\partial f}{\partial f}| = 0$};
+\node[right]  (one) at (-3, 1.5) { $\nabla^2 f = h = \left| \begin{array}{ccccc}\frac{\partial^2 f}{\partial x \partial x} &\frac{\partial^2 f}{\partial x \partial y} &\frac{\partial^2 f}{\partial x \partial z} &\frac{\partial^2 f}{\partial x \partial g} &\frac{\partial^2 f}{\partial x \partial f} \\ \frac{\partial^2 f}{\partial y \partial x} &\frac{\partial^2 f}{\partial y \partial y} &\frac{\partial^2 f}{\partial y \partial z} &\frac{\partial^2 f}{\partial y \partial g} &\frac{\partial^2 f}{\partial y \partial f} \\ \frac{\partial^2 f}{\partial z \partial x} &\frac{\partial^2 f}{\partial z \partial y} &\frac{\partial^2 f}{\partial z \partial z} &\frac{\partial^2 f}{\partial z \partial g} &\frac{\partial^2 f}{\partial z \partial f} \\ \frac{\partial^2 f}{\partial g \partial x} &\frac{\partial^2 f}{\partial g \partial y} &\frac{\partial^2 f}{\partial g \partial z} &\frac{\partial^2 f}{\partial g \partial g} &\frac{\partial^2 f}{\partial g \partial f} \\ \frac{\partial^2 f}{\partial f \partial x} &\frac{\partial^2 f}{\partial f \partial y} &\frac{\partial^2 f}{\partial f \partial z} &\frac{\partial^2 f}{\partial f \partial g} &\frac{\partial^2 f}{\partial f \partial f} \\ \end{array} \right| = 0$};
+\node[right]  (one) at (-3, -.5) {\textbf{Tape}} ;
+\node[right]  (one) at (5.5, -.5) {\textbf{Trace}} ;
+\node[right]  (one) at (-3, -1) {\textbf{m = 2}  \small // last elementary operation} ;
+\node[right]  (one) at (-3, -1.5) {$\bar{w}[m] = 1 \small \textbf{(seed)}$};
+\node[right]  (one) at (-3, -2) {----------------------------------------------------};
+\node[right]  (one) at (-3, -2.5) {\textbf{i = m = 2}};
+\node[right]  (one) at (-3, -3) {\scriptsize $Variables[g, z] $};
+\node[right]  (one) at (-3, -4) {\scriptsize $w =\bar{w}[f] $};
+\node[right]  (one) at (-3, -4.5) {\scriptsize $\bar{w}[f]  = 0$};
+\node[right]  (one) at (-3, -5) {\scriptsize $\bar{H}[f][f] = \bar{h}[f][f]$};
+\node[right]  (one) at (-3, -5.5) {\scriptsize $\bar{h}[f][f] = 0$};
+\node[right]  (one) at (-3, -6) {\scriptsize $\bar{H}[f][g] = \bar{h}[f][g]$};
+\node[right]  (one) at (-3, -6.5) {\scriptsize $\bar{H}[f][g] = 0$};
+\node[right]  (one) at (-3, -7) {\scriptsize $\bar{H}[f][z] = \bar{h}[f][z]$};
+\node[right]  (one) at (-3, -7.5) {\scriptsize $\bar{H}[f][z] = 0$};
+\node[right]  (one) at (-3, -8.5) {\scriptsize $\bar{w}[g] += w\frac{\partial f}{\partial g} = \bar{w}[f]*0.09 =  0.09$};
+\node[right]  (one) at (-3, -9) {\scriptsize $\bar{h}[g][g] += \bar{H}[f][g]  \frac{\partial f}{\partial g} + \bar{H}[f][g]  \frac{\partial f}{\partial g}+\bar{H}[f][f]  \frac{\partial f}{\partial g} \frac{\partial f}{\partial g} + w\frac{\partial^2 f}{\partial g \partial g}$};
+\node[right]  (one) at (-3,-9.5) {\scriptsize $\bar{h}[g][g]  += 0*0.09 +0*0.09  +0*0.09 *0.09 + 1.0*0= 0.0 $};
+\node[right]  (one) at (-3, -10) {\scriptsize $\bar{h}[g][z] += \bar{H}[f][z]  \frac{\partial f}{\partial g} + \bar{H}[f][g]  \frac{\partial f}{\partial z}+\bar{H}[f][f]  \frac{\partial f}{\partial z} \frac{\partial f}{\partial g} + w\frac{\partial^2 f}{\partial g \partial z}$};
+\node[right]  (one) at (-3,-10.5) {\scriptsize $\bar{h}[g][z]  += 0*0.09 +0*-0.43  +0*0.09 *-0.43 + 1.0*-0.09 = -0.09$};
+
+
+\node[right]  (one) at (-3, -11.5) {\scriptsize $\bar{w}[z] += w\frac{\partial f}{\partial z} = \bar{w}[f]*-0.43 =  -0.43$};
+\node[right]  (one) at (-3, -12) {\scriptsize $\bar{h}[z][g] += \bar{H}[f][g]  \frac{\partial f}{\partial z} + \bar{H}[f][z]  \frac{\partial f}{\partial g}+\bar{H}[f][f]  \frac{\partial f}{\partial g} \frac{\partial f}{\partial z} + w\frac{\partial^2 f}{\partial z \partial g}$};
+\node[right]  (one) at (-3,-12.5) {\scriptsize $\bar{h}[z][g]  += 0*-0.43 +0*0.09  +0*-0.43 *0.09 + 1.0*-0.09 = -0.09 $};
+\node[right]  (one) at (-3, -13) {\scriptsize $\bar{h}[z][z] += \bar{H}[f][z]  \frac{\partial f}{\partial z} + \bar{H}[f][z]  \frac{\partial f}{\partial z}+\bar{H}[f][f]  \frac{\partial f}{\partial z} \frac{\partial f}{\partial z} + w\frac{\partial^2 f}{\partial z \partial z}$};
+\node[right]  (one) at (-3,-13.5) {\scriptsize $\bar{h}[z][z]  += 0*-0.43 +0*-0.43  +0*-0.43 *-0.43 + 1.0*0.43 = 0.43 $};
+
+\node[right]  (one) at (5.5, -2.75) {\scriptsize $\nabla f =  \bar{w} =  [0,0, -0.43, 0.09, 0]$};
+\node[right]  (one) at (5.5, -5) {\scriptsize $\nabla^2 f = h = \left| \begin{array}{ccccc}0 & 0 & 0 & 0 & 0  \\ 0 & 0 & 0 & 0 & 0  \\ 0 & 0 & 0.43 & -0.09 & 0  \\ 0 & 0 & -0.09 & 0 & 0  \\ 0 & 0 & 0 & 0 & 0  \\ \end{array}  \right| $};
+
+\node[right]  (one) at (-3, -15) {\textit{Insert g and z to the i -1 entry}};
+
+\node[right]  (one) at (-3, -16) {----------------------------------------------------};
+
+\node[right]  (one) at (-3, -16.5) {\textbf{i = m-1 = 1}};
+\node[right]  (one) at (-3, -17) {\scriptsize $Variables[x,y | z] $ // g is omitted since it is the dependent variable for this entry}; 
+\node[right]  (one) at (-3, -18) {\scriptsize $w =\bar{w}[g]  = .09$};
+\node[right]  (one) at (-3, -18.5) {\scriptsize $\bar{w}[g]  = 0$};
+\node[right]  (one) at (-3, -19) {\scriptsize $\bar{H}[g][g] = \bar{h}[g][g]$};
+\node[right]  (one) at (-3, -19.5) {\scriptsize $\bar{h}[g][g] = 0$};
+\node[right]  (one) at (-3, -20) {\scriptsize $\bar{H}[g][x] = \bar{h}[g][x]$};
+\node[right]  (one) at (-3, -20.5) {\scriptsize $\bar{H}[g][x] = 0$};
+\node[right]  (one) at (-3, -21) {\scriptsize $\bar{H}[g][y] = \bar{h}[g][y]$};
+\node[right]  (one) at (-3, -21.5) {\scriptsize $\bar{H}[g][y] = 0$};
+\node[right]  (one) at (-3, -22) {\scriptsize $\bar{H}[g][z] = \bar{h}[g][z]$};
+\node[right]  (one) at (-3, -22.5) {\scriptsize $\bar{H}[g][z] = 0$};
+\node[right]  (one) at (-3, -23.5) {\scriptsize $\bar{w}[x] += w\frac{\partial f}{\partial x} = \bar{w}[g]*1.5 =  0.135$};
+\node[right]  (one) at (-3, -24) {\scriptsize $\bar{h}[x][x] += \bar{H}[g][x]  \frac{\partial g}{\partial x} + \bar{H}[g][x]  \frac{\partial g}{\partial x}+\bar{H}[g][g]  \frac{\partial f}{\partial x} \frac{\partial f}{\partial x} + w\frac{\partial^2 g}{\partial x \partial x}$};
+\node[right]  (one) at (-3,-24.5) {\scriptsize $\bar{h}[x][x]  += 0*1.5 +0*1.5  +0*1.5 *1.5 + 0.09 * 0 = 0.0 $};
+\node[right]  (one) at (-3, -25) {\scriptsize $\bar{h}[x][y] += \bar{H}[g][y]  \frac{\partial g}{\partial x} + \bar{H}[g][x]  \frac{\partial g}{\partial y}+\bar{H}[g][g]  \frac{\partial f}{\partial y} \frac{\partial f}{\partial x} + w\frac{\partial^2 g}{\partial x \partial y}$};
+\node[right]  (one) at (-3,-25.5) {\scriptsize $\bar{h}[x][y]  += 0*1.5 +0*3.1459  +0*1.5 *3.1459 +  0.09 *1 = .09 $};
+\node[right]  (one) at (-3, -26) {\scriptsize $\bar{h}[x][z] += \bar{H}[g][z]  \frac{\partial g}{\partial x} + \bar{H}[g][x]  \frac{\partial g}{\partial z}+\bar{H}[g][g]  \frac{\partial f}{\partial z} \frac{\partial f}{\partial x} + w\frac{\partial^2 g}{\partial x \partial z}$};
+\node[right]  (one) at (-3,-26.5) {\scriptsize $\bar{h}[x][z]  += (-0.09*1.5) +0*0  +0*1.5 *0 + 1.0*0 = -0.135 $};
+
+
+\node[right]  (one) at (-3, -27.5) {\scriptsize $\bar{w}[y] += w\frac{\partial f}{\partial y} = \bar{w}[g]*3.1459 =  0.28$};
+\node[right]  (one) at (-3, -28) {\scriptsize $\bar{h}[y][x] += \bar{H}[g][x]  \frac{\partial g}{\partial y} + \bar{H}[g][y]  \frac{\partial g}{\partial x}+\bar{H}[g][g]  \frac{\partial f}{\partial x} \frac{\partial f}{\partial y} + w\frac{\partial^2 g}{\partial y \partial x}$};
+\node[right]  (one) at (-3,-28.5) {\scriptsize $\bar{h}[y][x]  += 0*3.1459 +0*1.5  +0*3.1459 *1.5 + 0.09*1 = 0.09 $};
+\node[right]  (one) at (-3, -29) {\scriptsize $\bar{h}[y][y] += \bar{H}[g][y]  \frac{\partial g}{\partial y} + \bar{H}[g][y]  \frac{\partial g}{\partial y}+\bar{H}[g][g]  \frac{\partial f}{\partial y} \frac{\partial f}{\partial y} + w\frac{\partial^2 g}{\partial y \partial y}$};
+\node[right]  (one) at (-3,-29.5) {\scriptsize $\bar{h}[y][y]  += 0*3.1459 +0*3.1459  +0*3.1459 *3.1459 + 1.0*0 = .09 $};
+\node[right]  (one) at (-3, -30) {\scriptsize $\bar{h}[y][z] += \bar{H}[g][z]  \frac{\partial g}{\partial y} + \bar{H}[g][y]  \frac{\partial g}{\partial z}+\bar{H}[g][g]  \frac{\partial f}{\partial z} \frac{\partial f}{\partial y} + w\frac{\partial^2 g}{\partial y \partial z}$};
+\node[right]  (one) at (-3,-30.5) {\scriptsize $\bar{h}[y][z]  +=  (-0.09*3.1459)+0*0  +0*3.1459 *0 + 1.0*0 = -0.28$};
+
+
+\node[right]  (one) at (-3, -31.5) {\scriptsize $\bar{w}[z] += w\frac{\partial f}{\partial z} = \bar{w}[g]*0 =  -0.43$};
+\node[right]  (one) at (-3, -32) {\scriptsize $\bar{h}[z][x] += \bar{H}[g][x]  \frac{\partial g}{\partial z} + \bar{H}[g][z]  \frac{\partial g}{\partial x}+\bar{H}[g][g]  \frac{\partial f}{\partial x} \frac{\partial f}{\partial z} + w\frac{\partial^2 g}{\partial z \partial x}$};
+\node[right]  (one) at (-3,-32.5) {\scriptsize $\bar{h}[z][x]  += 0*0 + (-0.09*1.5)  +0*0 *1.5 + 1.0*0 = -0.135 $};
+\node[right]  (one) at (-3, -33) {\scriptsize $\bar{h}[z][y] += \bar{H}[g][y]  \frac{\partial g}{\partial z} + \bar{H}[g][z]  \frac{\partial g}{\partial y}+\bar{H}[g][g]  \frac{\partial f}{\partial y} \frac{\partial f}{\partial z} + w\frac{\partial^2 g}{\partial z \partial y}$};
+\node[right]  (one) at (-3,-33.5) {\scriptsize $\bar{h}[z][y]  += 0*0 +(-0.09*3.1459)  +0*0 *3.1459 + 1.0*0 = -0.28 $};
+\node[right]  (one) at (-3, -34) {\scriptsize $\bar{h}[z][z] += \bar{H}[g][z]  \frac{\partial g}{\partial z} + \bar{H}[g][z]  \frac{\partial g}{\partial z}+\bar{H}[g][g]  \frac{\partial f}{\partial z} \frac{\partial f}{\partial z} + w\frac{\partial^2 g}{\partial z \partial z}$};
+\node[right]  (one) at (-3,-34.5) {\scriptsize $\bar{h}[z][z]  += 0*0 +0*0  +0*0 *0 + 1.0*0 = 0.43 $};
+
+
+
+\node[right]  (one) at (5, -18.75) {\scriptsize $\nabla f =  \bar{w} =  [ 0.135, 0.28, -0.43, 0.09, 0]$};
+\node[right]  (one) at (5, -21) {\scriptsize $\nabla^2 f = h = \left| \begin{array}{ccccc}0 & .09 & -0.135  & 0 & 0  \\ 0.09  & .09  & -0.28 & 0 & 0  \\ -0.135 & -0.28 & 0.43 & -0.09 & 0  \\ 0 & 0 & -0.09 & 0 & 0  \\ 0 & 0 & 0 & 0 & 0  \\ \end{array}  \right| $};
+
+\node[right]  (one) at (-3, -35.5) {----------------------------------------------------};
+
+\node[right]  (one) at (-3, -36.5) {\textbf{Resulting Derivatives:}};
+
+\node[right]  (one) at (-3, -39) { $\nabla f =  \bar{w} =  \left| \begin{array}{ccccc}\frac{\partial f}{\partial x } &\frac{\partial f}{\partial y } &\frac{\partial f}{\partial z} &\frac{\partial f}{\partial g} &\frac{\partial f}{\partial f}\end{array}  \right| =  \left| \begin{array}{ccccc} 0.135 & 0.28 &-0.43 & 0.09 & 0\end{array}  \right|$};
+\node[right]  (one) at (-3, -41.5) { $\nabla^2 f = h = \left| \begin{array}{ccccc}\frac{\partial^2 f}{\partial x \partial x} &\frac{\partial^2 f}{\partial x \partial y} &\frac{\partial^2 f}{\partial x \partial z} &\frac{\partial^2 f}{\partial x \partial g} &\frac{\partial^2 f}{\partial x \partial f} \\ \frac{\partial^2 f}{\partial y \partial x} &\frac{\partial^2 f}{\partial y \partial y} &\frac{\partial^2 f}{\partial y \partial z} &\frac{\partial^2 f}{\partial y \partial g} &\frac{\partial^2 f}{\partial y \partial f} \\ \frac{\partial^2 f}{\partial z \partial x} &\frac{\partial^2 f}{\partial z \partial y} &\frac{\partial^2 f}{\partial z \partial z} &\frac{\partial^2 f}{\partial z \partial g} &\frac{\partial^2 f}{\partial z \partial f} \\ \frac{\partial^2 f}{\partial g \partial x} &\frac{\partial^2 f}{\partial g \partial y} &\frac{\partial^2 f}{\partial g \partial z} &\frac{\partial^2 f}{\partial g \partial g} &\frac{\partial^2 f}{\partial g \partial f} \\ \frac{\partial^2 f}{\partial f \partial x} &\frac{\partial^2 f}{\partial f \partial y} &\frac{\partial^2 f}{\partial f \partial z} &\frac{\partial^2 f}{\partial f \partial g} &\frac{\partial^2 f}{\partial f \partial f} \\ \end{array} \right| = \left| \begin{array}{ccccc}0 & 0.09 & -0.135  & 0 & 0  \\ 0.09  & 0.09  & -0.28 & 0 & 0  \\ -0.135 & -0.28 & 0.43 & -0.09 & 0  \\ 0 & 0 & -0.09 & 0 & 0  \\ 0 & 0 & 0 & 0 & 0  \\ \end{array}  \right| $};
+
+
+\node[right]  (astart2) at (-4, -2) {} ;
+\node[right]  (aend2) at (-4,-36.5) {} ;
+\draw[->,solid,line width=1mm,fill=red] (astart2) -- (aend2);
+\end{tikzpicture}
+\end{lrbox}%
+%
+\ifdim\ht\mysavebox>\textheight
+    \setlength{\myrest}{\ht\mysavebox}%
+    \loop\ifdim\myrest>\textheight
+        \newpage\par\noindent
+        \clipbox{0 {\myrest-\textheight} 0 {\ht\mysavebox-\myrest}}{\usebox{\mysavebox}}%
+        \addtolength{\myrest}{-\textheight}%
+    \repeat
+    \newpage\par\noindent
+    \clipbox{0 0 0 {\ht\mysavebox-\myrest}}{\usebox{\mysavebox}}%
+\else
+    \usebox{\mysavebox}%
+\fi
+
+
+%\section{References}
+\begin{thebibliography}{9}
+\bibitem{wiki_ad} 
+Wikipedia contributors
+\textit{Automatic Differentiation}. 
+Wikipedia, The Free Encyclopedia, 2016.
+ 
+ \bibitem{wiki_hessian} 
+Wikipedia contributors
+\textit{Hessian Matrix}. 
+Wikipedia, The Free Encyclopedia, 2016.
+ 
+ \bibitem{gowler_ep} 
+Robert Mansel Gower, Margarida P. Mello
+\textit{Hessian Matrices via Automatic Differentiation}.
+Institute of Mathematics, Statistics and Scientific Computing,State University of Campinas, September 29, 2010.
+
+ 
+ \bibitem{griewank} 
+ Andreas Griewank, Andrea Walther
+[\textit{Introduction to Automatic Differentiation}]. 
+PAMM · Proc. Appl. Math. Mech. 2, 45?49 (2003).
+
+ \bibitem{griewank2} 
+ Andreas Griewank
+[\textit{On Automatic Differentiation}]. 
+Center for Research on Parallel Computation, 1989.
+
+\end{thebibliography}
+
+
+\end{document}
