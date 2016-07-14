@@ -6,9 +6,9 @@
 \begin{document}
 	\thispagestyle{empty}
 	\begin{center}
-	Third order equations from pages 46 and 48 of
+	Third order equations from pages 46 and 48, and derived 4th order equations, of
 	\url{www.autodiff.org/Docs/euroad/17th EuroAd Workshop - Mu Wang - Higher Order Reverse Mode With MPI.pdf}
-	ZTA, January 2016
+	ZTA, July 2016
 	\end{center}
 	\clearpage
 	
@@ -24,58 +24,131 @@
 	Then
 	\begin{equation}
 	\begin{split}
-	\frac{\hat{\partial}}{\hat{\partial} v_b}\left[\frac{\hat{\partial} f_i}{\hat{\partial} v_c}\right] &=
+	\frac{\hat{\partial}}{\hat{\partial} v_b}\left[\frac{\hat{\partial} f_i}{\hat{\partial} v_c}\right]
+	&=
 	\frac{\partial^2 f_{i+1}}{\partial v_b \partial v_c} +
-	\left(\frac{\partial^2 \phi_i}{\partial v_b \partial v_c} * \frac{\partial f_{i+1}}{\partial v_i} \right) +
-	\left(\frac{\partial\phi_i}{\partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_b \partial v_i}\right)
+	\left(\frac{\partial\phi_i}{\partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_c}\right)
 	\\
-	&+ \left(\frac{\partial\phi_i}{\partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_c}\right) + 
-	\left(\frac{\partial\phi_i}{\partial v_b} * \frac{\partial\phi_i}{\partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right)
+	&+
+	\left(\frac{\partial^2 \phi_i}{\partial v_b \partial v_c} * \frac{\partial f_{i+1}}{\partial v_i} \right)
+	\\
+	&+
+	\left(\frac{\partial\phi_i}{\partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_b \partial v_i}\right) +
+	\left(\frac{\partial\phi_i}{\partial v_c} * \frac{\partial\phi_i}{\partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right)
 	\end{split}
 	\end{equation}
 	
 	It then follows that
 	\begin{equation}
 	\begin{split}
-	\frac{\hat{\partial}}{\hat{\partial}  v_a}\left[\frac{\hat{\partial}}{\hat{\partial} v_b}\left(\frac{\hat{\partial} f_i}{\hat{\partial} v_c}\right)\right] &= 
+	\frac{\hat{\partial}}{\hat{\partial}  v_a}\left[\frac{\hat{\partial}}{\hat{\partial} v_b}\left(\frac{\hat{\partial} f_i}{\hat{\partial} v_c}\right)\right]
+	&= 
 	\frac{\partial^3 f_{i+1}}{\partial v_a \partial v_b \partial v_c} + 
 	\left(\frac{\partial^3 \phi_i}{\partial v_a \partial v_b \partial v_c} * \frac{\partial f_{i+1}}{\partial v_i}\right) + 
 	\left(\frac{\partial^2 \phi_i}{\partial v_b \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_a \partial v_i}\right) 
 	\\
-	&+ \left(\frac{\partial^2 \phi_i}{\partial v_a \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_b \partial v_i}\right) + 
+	&+
+	\left(\frac{\partial^2 \phi_i}{\partial v_a \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_b \partial v_i}\right) + 
 	\left(\frac{\partial \phi_i}{\partial v_c} * \frac{\partial^3 f_{i+1}}{\partial v_a \partial v_b \partial v_i}\right) 
 	\\
-	&+ \left(\frac{\partial^2 \phi_i}{\partial v_a \partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_c}\right) + 
+	&+
+	\left(\frac{\partial^2 \phi_i}{\partial v_a \partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_c}\right) + 
 	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial^3 f_{i+1}}{\partial v_a \partial v_i \partial v_c}\right) 
 	\\
-	&+ \left(\frac{\partial^2 \phi_i}{\partial v_a \partial v_b} * \frac{\partial \phi_i}{\partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) + 
+	&+
+	\left(\frac{\partial^2 \phi_i}{\partial v_a \partial v_b} * \frac{\partial \phi_i}{\partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) + 
 	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial^2 \phi_i}{\partial v_a \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) 
 	\\
-	&+ \left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial \phi_i}{\partial v_c} * \frac{\partial^3 f_{i+1}}{\partial v_a \partial v_i \partial v_i}\right) 
+	&+
+	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial \phi_i}{\partial v_c} * \frac{\partial^3 f_{i+1}}{\partial v_a \partial v_i \partial v_i}\right) 
 	\\
-	&+ \frac{\partial \phi_i}{\partial v_a} * 
+	&+
+	\frac{\partial \phi_i}{\partial v_a} * 
 	\left[\frac{\partial^3 f_{i+1}}{\partial v_i \partial v_b \partial v_c} + 
 	\left(\frac{\partial^3 \phi_i}{\partial v_i \partial v_b \partial v_c} * \frac{\partial f_{i+1}}{\partial v_i}\right) + 
 	\left(\frac{\partial^2 \phi_i}{\partial v_b \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) 
 	\right.
 	\\
-	&\left.
+	&
+	\left.
 	+ \left(\frac{\partial^2 \phi_i}{\partial v_i \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_b \partial v_i}\right) + 
 	\left(\frac{\partial \phi_i}{\partial v_c} * \frac{\partial^3 f_{i+1}}{\partial v_i \partial v_b \partial v_i}\right) 
 	\right.
 	\\
-	&\left.
+	&
+	\left.
 	+ \left(\frac{\partial^2 \phi_i}{\partial v_i \partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_c}\right) + 
 	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial^3 f_{i+1}}{\partial v_i \partial v_i \partial v_c}\right) 
 	\right.
 	\\
-	&\left.
+	&
+	\left.
 	+ \left(\frac{\partial^2 \phi_i}{\partial v_i \partial v_b} * \frac{\partial \phi_i}{\partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) + 
 	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial^2 \phi_i}{\partial v_i \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) 
 	\right.
 	\\
-	&\left.
+	&
+	\left.
 	+ \left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial \phi_i}{\partial v_c} * \frac{\partial^3 f_{i+1}}{\partial v_i \partial v_i \partial v_i}\right)\right]
 	\end{split}
-	\end{equation}	
+	\end{equation}
+	
+	Which leads to
+	\begin{equation}
+	\begin{split}
+	\frac{\hat{\partial}}{\hat{\partial} v_z}\left\{	\frac{\hat{\partial}}{\hat{\partial} v_a}\left[
+	\frac{\hat{\partial}}{\hat{\partial} v_b}\left(
+	\frac{\hat{\partial} f_i}{\hat{\partial} v_c}\right)\right]\right\}
+	&= 
+	\frac{\partial^4 f_{i+1}}{\partial v_z \partial v_a \partial v_b \partial v_c} +
+	\left(\frac{\partial \phi_i}{\partial v_z} * \frac{\partial^4 f_{i+1}}{\partial v_i \partial v_a \partial v_b \partial v_c}\right)
+	\\
+	&+
+	Y
+	\\
+	&+
+	Z
+	\\
+	&+
+	...
+	\\
+	&+
+	\frac{\partial^2 \phi_i}{\partial v_z \partial v_a} * 
+	\left[\frac{\partial^3 f_{i+1}}{\partial v_i \partial v_b \partial v_c} + 
+	\left(\frac{\partial^3 \phi_i}{\partial v_i \partial v_b \partial v_c} * \frac{\partial f_{i+1}}{\partial v_i}\right) + 
+	\left(\frac{\partial^2 \phi_i}{\partial v_b \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) 
+	\right.
+	\\
+	&
+	\left.
+	+ \left(\frac{\partial^2 \phi_i}{\partial v_i \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_b \partial v_i}\right) + 
+	\left(\frac{\partial \phi_i}{\partial v_c} * \frac{\partial^3 f_{i+1}}{\partial v_i \partial v_b \partial v_i}\right) 
+	\right.
+	\\
+	&
+	\left.
+	+ \left(\frac{\partial^2 \phi_i}{\partial v_i \partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_c}\right) + 
+	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial^3 f_{i+1}}{\partial v_i \partial v_i \partial v_c}\right) 
+	\right.
+	\\
+	&
+	\left.
+	+ \left(\frac{\partial^2 \phi_i}{\partial v_i \partial v_b} * \frac{\partial \phi_i}{\partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) + 
+	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial^2 \phi_i}{\partial v_i \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) 
+	\right.
+	\\
+	&
+	\left.
+	+ \left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial \phi_i}{\partial v_c} * \frac{\partial^3 f_{i+1}}{\partial v_i \partial v_i \partial v_i}\right)\right]
+	\\
+	&+
+	W
+	\\
+	&+
+	U
+	\\
+	&+
+	...
+	\end{split}
+	\end{equation}
 \end{document}
