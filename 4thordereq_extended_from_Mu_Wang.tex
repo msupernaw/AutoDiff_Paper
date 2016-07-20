@@ -27,11 +27,11 @@
 	\frac{\hat{\partial}}{\hat{\partial} v_b}\left[\frac{\hat{\partial} f_i}{\hat{\partial} v_c}\right]
 	&=
 	\frac{\partial^2 f_{i+1}}{\partial v_b \partial v_c} +
-	\left(\frac{\partial\phi_i}{\partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_c}\right) + 
-	\left(\frac{\partial^2 \phi_i}{\partial v_b \partial v_c} * \frac{\partial f_{i+1}}{\partial v_i} \right)
+	\left(\frac{\partial^2 \phi_i}{\partial v_b \partial v_c} * \frac{\partial f_{i+1}}{\partial v_i} \right) + 
+	\left(\frac{\partial\phi_i}{\partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_b \partial v_i}\right)
 	\\
 	&+
-	\left(\frac{\partial\phi_i}{\partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_b \partial v_i}\right) +
+	\left(\frac{\partial\phi_i}{\partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_c}\right) + 
 	\left(\frac{\partial\phi_i}{\partial v_c} * \frac{\partial\phi_i}{\partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right)
 	\end{split}
 	\end{equation}
@@ -51,11 +51,11 @@
 	\\
 	&+
 	\left(\frac{\partial^2 \phi_i}{\partial v_a \partial v_b} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_c}\right) + 
-	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial^3 f_{i+1}}{\partial v_a \partial v_i \partial v_c}\right) 
+	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial^3 f_{i+1}}{\partial v_a \partial v_i \partial v_c}\right)
 	\\
 	&+
-	\left(\frac{\partial^2 \phi_i}{\partial v_a \partial v_b} * \frac{\partial \phi_i}{\partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) + 
-	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial^2 \phi_i}{\partial v_a \partial v_c} * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right) 
+	\left\{\left[\left(\frac{\partial^2 \phi_i}{\partial v_a \partial v_c} * \frac{\partial \phi_i}{\partial v_b}\right) + 
+	\left(\frac{\partial \phi_i}{\partial v_c} * \frac{\partial^2 \phi_i}{\partial v_a \partial v_b}\right)\right] * \frac{\partial^2 f_{i+1}}{\partial v_i \partial v_i}\right\}
 	\\
 	&+
 	\left(\frac{\partial \phi_i}{\partial v_b} * \frac{\partial \phi_i}{\partial v_c} * \frac{\partial^3 f_{i+1}}{\partial v_a \partial v_i \partial v_i}\right) 
