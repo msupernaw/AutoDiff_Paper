@@ -22,9 +22,6 @@
 
 \usepackage{lipsum} % Package to generate dummy text throughout this template
 
-
-
-
 \usepackage[printwatermark]{xwatermark}
 \newwatermark[allpages,color=red!50,angle=45,scale=3,xpos=0,ypos=0]{DRAFT}
 \usepackage{makecell}
@@ -184,7 +181,7 @@
 \pagestyle{fancy} % All pages have headers and footers
 \fancyhead{} % Blank out the default header
 \fancyfoot{} % Blank out the default footer
-\fancyhead[C]{Some Journal$\bullet$ May 2016 $\bullet$ Vol. XXI, No. 1} % Custom header text
+\fancyhead[C]{Some Journal $\bullet$ August 2016 $\bullet$ Vol. XXI, No. 1} % Custom header text
 \fancyfoot[RO,LE]{\thepage} % Custom footer text
 
 
@@ -199,12 +196,12 @@
 \large
 \textsc{Matthew R. Supernaw}\\[2mm] % Your name
 \normalsize National Oceanic Atmospheric Administration \\ % Your institution
-\normalsize National Marine Fisheries Service, SEFSC\\ % Your institution
+\normalsize National Marine Fisheries Service, Southeast Fisheries Science Center\\ % Your institution
 \normalsize \href{mailto:matthew.supernaw@noaa.gov}{matthew.supernaw@noaa.gov} \\ % Your email address
 \\
 \textsc{Z. Teresa A'mar, PhD}\\[2mm] % Your name
 \normalsize National Oceanic Atmospheric Administration \\ % Your institution
-\normalsize National Marine Fisheries Service, Office Of Science And Technology\\ % Your institution
+\normalsize National Marine Fisheries Service, Office of Science and Technology\\ % Your institution
 \normalsize \href{mailto:teresa.amar@noaa.gov}{teresa.amar@noaa.gov} \\% Your email address
 \vspace{-5mm}
 }
@@ -272,16 +269,16 @@ The foundation of AD is the chain rule. The chain rule in calculus is a method f
 with \textit{$\frac{df}{dg}$} as the outer derivative and \textit{$\frac{dg}{dx}$} as the inner derivative. \\
 
 \begin{editnote}
-Build from the chain rule to what the forward and backward modes are and why they are important
-introduce gradients and Hessian matrices and their significance
 needs moar mathematics to generalize applicability
+introduce gradients and Hessian matrices and their significance
+build from the chain rule to what the forward and backward modes are and why they are important
 \end{editnote}
 
 \subsection{Forward Mode}
 Forward mode (or the tangent linear method) AD traverses the chain rule from inside to outside. That is, from (3),  \textit{$\frac{df}{dg}$} is computed before \textit{$\frac{dg}{dx}$}. To demonstrate how the forward accumulation of the chain rule works, consider the expressions $f(x_1,x_2) = ln(x_1x_2)$. Here $g(x_1,x_2) = x_1x_2$ and $f(x_1,x_2) = ln(g(x_1,x_2))$. So, to find the gradient $\nabla f(x_1,x_2)$, $f(x_1,x_2)$ must be evaluated and the operations recorded to a "Tape" so that the partial derivatives can be evaluated later.\\
 
 \begin{editnote}
-describe what the "Tape" is and its significance
+define/describe the "Tape" and its significance
 \end{editnote}
 
 \\
@@ -356,7 +353,13 @@ The above "Tape" evaluation can be generalized algorithmically by:\\
 In Algorithm 1, for a function $f(x_1,x_2..., x_m)$, the "Tape" must be evaluated \textit{m} times to compute the gradient. For highly parameterized functions, it may be desirable to compute the gradient using reverse mode accumulation.
 
 \subsubsection{Reverse Mode}
+
 Reverse mode (or the adjoint method) AD traverses the chain rule from outside to inside. That is, from (3),  \textit{$\frac{dg}{dx}$} is computed before \textit{$\frac{df}{dg}$}. It works by accumulating a series of adjoints in the opposite direction of the forward mode method. This can be generalized by the following algorithm:
+
+\begin{editnote}
+define/describe adjoints and their significance
+\end{editnote}
+
 \begin{algorithm*}
   \caption{Reverse Mode Accumulation \cite{griewank2}}
   \begin{algorithmic}[1]
@@ -435,11 +438,10 @@ Why isn't it as simple as first-order reverse mode?
 \end{editnote}
 
 In nonlinear optimization problems, in particular those using some variation of the Newton method, one must evaluate either the exact or an approximation of the Hessian matrix at each iteration. The Hessian matrix is a square matrix of all the second-order partial derivatives for a function. It describes the local curvature of a function of many variables \cite{wiki_hessian}. In some statistical computing routines, such as mixed effects problems using the Laplace Transformation method, third-order mixed partials are required. In either case, it is desirable to calculate these derivatives in the most efficient manner possible, as problems involving a high number of parameters can easily become arduous if using a finite differences method or even a forward mode automatic differentiation routine. \\
-At first glance, it may seem the solution is to simply differentiate Algorithm 2, but this will neglect to account for important nonlinear interactions as Gowler, et. al. have demonstrated with their "Edge-Pushing" algorithm \cite{gowler_ep}. This observation is an important contribution to the research of higher-order reverse mode automatic differentiation and has been tremendously insightful in the development of this algorithm.
-
+At first glance, it may seem the solution is to differentiate Algorithm 2, but this will not account for important nonlinear interactions as Gowler, et. al. have shown with their "Edge-Pushing" algorithm \cite{gowler_ep}. This observation is an important contribution to the research of higher-order reverse mode automatic differentiation and has been tremendously insightful in the development of this algorithm.
 
 \subsection{Nonlinear Interactions}
-A nonlinear interaction can be defined at the expression level as an interaction of variables in the linear portion of an expression with those that are nonlinear.  For example:
+A nonlinear interaction can be defined at the expression level as an interaction of variables in the linear portion of an expression with those that are nonlinear. For example:
 
 \begin{equation}
  f(x,y,z) = \frac{x*y}{e^z}
@@ -648,8 +650,6 @@ Continuing the observation of nonlinear interactions and differentiating Algorit
 \end{algorithmic}
  \end{algorithm*}
 
-
-
 \begin{editnote}
 Third order reverse mode description.
 \end{editnote}
@@ -669,14 +669,18 @@ Something
 
 Something
 
-\section{Conclusions}
+\section{Conclusions and Future Work}
+
+Summarize what is new in this algorithm and the significance thereof
 
 \begin{editnote}
 Talk about the benefits and limitations of the algorithm.
 \end{editnote}
 
+Something
+
 \section{Appendix 1}
-What follows is an example trace of an objective function evaluation and the accumulation of first and second-order derivatives. \\
+This is an example trace of an objective function evaluation and the accumulation of the first- and second-order derivatives. \\
 \\
 \textbf{Given: } \\
 $x$ = 3.1459 \\
@@ -861,6 +865,5 @@ PAMM · Proc. Appl. Math. Mech. 2, 45?49 (2003).
 Center for Research on Parallel Computation, 1989.
 
 \end{thebibliography}
-
 
 \end{document}
