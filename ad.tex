@@ -225,8 +225,7 @@
 \begin{abstract}
 
 \noindent
-The method of computing first-order partial derivatives in reverse mode has been well documented in literature. In this article we present an extension to the reverse mode automatic differentiation algorithm which allows us to compute higher-order mixed partial derivatives up to third-order. In addition, we introduce an implementation written in the C++ programing language. These higher-order mixed derivatives are particularly useful for optimization problems where gradients and/or Hessian matrices are needed. To demonstrate the usefulness of these algorithms, we'll show how the second and third-order derivatives are used in various scientific programming routines.
-
+The method of computing first-order partial derivatives in reverse mode has been well documented in literature. This paper presents an extension to the reverse mode automatic differentiation algorithm which allows for computation of higher-order mixed partial derivatives up to third-order. In addition, this paper introduces an implementation of AD written in the C++ programing language. These higher-order mixed derivatives are particularly useful for optimization problems where gradients and/or Hessian matrices are needed. To demonstrate the usefulness of these algorithms, an example of how the second and third-order derivatives are used in various scientific programming routines will be presented.
 
 \end{abstract}
 
@@ -237,19 +236,22 @@ The method of computing first-order partial derivatives in reverse mode has been
 
 \section{Introduction}
 
+\lettrine[nindent=0em,lines=3]{A}utomatic, or algorithmic, differentiation (AD) is a chain rule-based technique for evaluating derivatives of functions given as computer programs for their estimation / optimization / ??? \cite{griewank}. This technique is useful and widely applicable because every computer algorithm, no matter how complex, consists of elementary arithmetic operations (addition, subtraction, multiplication, division, etc.) and elementary functions (exp, log, sin, cos, etc.) \cite{wiki_ad}.
 
-\lettrine[nindent=0em,lines=3]{A}utomatic, or algorithmic, differentiation (AD) is a chain rule-based technique for evaluating derivatives of functions given as computer programs for their elimination \cite{griewank}. This technique is useful because every computer algorithm, no matter how complicated, consists of elementary arithmetic operations (addition, subtraction, multiplication, division, etc.) and elementary functions (exp, log, sin, cos, etc.) \cite{wiki_ad}.
-
-Other methods used for optimization include X, Y, and finite-difference techniques.  Compared to finite-difference techniques, AD has proven to be more efficient for accurately computing partial derivatives. \\
+Other methods used for nonlinear optimization include Newton method, Y, and finite-difference techniques.  Compared to finite-difference techniques, AD has proven to be more efficient for accurately computing partial derivatives. \\
 
 \begin{editnote}
+need more context and history
 Why is it useful?
+applications for non-linear optimization
 Who uses AD?
+need to reference primary sources/peer-reviewed literature
+brief overview of the topics in this paper:  AD, gradients and Hessians, forward mode, backward mode, higher order, etc.
 \end{editnote}
 
 \section{Methods}
 
-In this section, we provide a very basic description of automatic differentiation (AD).
+A basic description of automatic differentiation (AD) is presented, and the full description of the steps needed for implementation is provided.
 
 The foundation of AD is the chain rule. The chain rule in calculus is a method for computing the derivative of two or more functions:\\
  \begin{equation}
@@ -270,12 +272,18 @@ The foundation of AD is the chain rule. The chain rule in calculus is a method f
 with \textit{$\frac{df}{dg}$} as the outer derivative and \textit{$\frac{dg}{dx}$} as the inner derivative. \\
 
 \begin{editnote}
-Build from the chain rule to what the forward and backward modes are
+Build from the chain rule to what the forward and backward modes are and why they are important
+introduce gradients and Hessian matrices and their significance
+needs moar mathematics to generalize applicability
 \end{editnote}
 
-
 \subsection{Forward Mode}
-Forward mode (or the tangent linear method) AD traverses the chain rule from inside to outside. That is, from (3),  \textit{$\frac{df}{dg}$} is computed before \textit{$\frac{dg}{dx}$}. To demonstrate how the forward accumulation of the chain rule works, consider the expressions $f(x_1,x_2) = ln(x_1x_2)$. Here $g(x_1,x_2) = x_1x_2$ and $f(x_1,x_2) = ln(g(x_1,x_2))$. So, to find the gradient $\nabla f(x_1,x_2) $ we must evaluate $f(x_1,x_2)$ and record these operations to a "Tape" so we can evaluate the partial derivatives later.\\
+Forward mode (or the tangent linear method) AD traverses the chain rule from inside to outside. That is, from (3),  \textit{$\frac{df}{dg}$} is computed before \textit{$\frac{dg}{dx}$}. To demonstrate how the forward accumulation of the chain rule works, consider the expressions $f(x_1,x_2) = ln(x_1x_2)$. Here $g(x_1,x_2) = x_1x_2$ and $f(x_1,x_2) = ln(g(x_1,x_2))$. So, to find the gradient $\nabla f(x_1,x_2)$, $f(x_1,x_2)$ must be evaluated and the operations recorded to a "Tape" so that the partial derivatives can be evaluated later.\\
+
+\begin{editnote}
+describe what the "Tape" is and its significance
+\end{editnote}
+
 \\
 \begin{tikzpicture}
 \node[right]  (zero) at (-3, 0) {\textbf{Evaluation}} ;
@@ -296,7 +304,7 @@ Forward mode (or the tangent linear method) AD traverses the chain rule from ins
 \end{tikzpicture}
 \\
 \\
-Now that we have a record of $f(x_1,x_2)$ on the "Tape", we can apply the forward mode accumulation of the chain rule and compute the gradient:
+Now that there is a record of $f(x_1,x_2)$ on the "Tape", the forward mode accumulation of the chain rule can be applied, and the gradient can be computed:
 \\
 \\
 \begin{tikzpicture}
@@ -345,8 +353,7 @@ The above "Tape" evaluation can be generalized algorithmically by:\\
 \end{algorithmic}
  \end{algorithm}
 
-From Algorithm 1, for a function $f(x_1,x_2..., x_m)$ the "Tape" must be evaluated \textit{m} times to compute the gradient. For highly parameterized functions, it may be desirable to compute the gradient using reverse mode accumulation.
-
+In Algorithm 1, for a function $f(x_1,x_2..., x_m)$, the "Tape" must be evaluated \textit{m} times to compute the gradient. For highly parameterized functions, it may be desirable to compute the gradient using reverse mode accumulation.
 
 \subsubsection{Reverse Mode}
 Reverse mode (or the adjoint method) AD traverses the chain rule from outside to inside. That is, from (3),  \textit{$\frac{dg}{dx}$} is computed before \textit{$\frac{df}{dg}$}. It works by accumulating a series of adjoints in the opposite direction of the forward mode method. This can be generalized by the following algorithm:
@@ -386,7 +393,7 @@ To demonstrate the reverse mode method, let's revisit the example from the forwa
 \draw[->,solid,line width=1mm,fill=red] (astart2) -- (aend2);
 \end{tikzpicture}
 
-Now we have a tape that contains entries that each have a list of adjoints to use in the reverse mode calculation. By traversing the tape from the bottom up, we can easily compute the full gradient in one sweep using \textbf{Algorithm 2}:\\
+Now the tape contains entries that each have a list of adjoints to use in the reverse mode calculation. By traversing the "Tape" from the bottom up, the full gradient can be computed in one sweep using \textbf{Algorithm 2}:\\
 
  \begin{tikzpicture}
 \node[right]  (one) at (-3, 0) {$\nabla f =  \bar{w} =  [\bar{ x_1},\bar{x_2},\bar{x_3}, \bar{x_4}]$};
@@ -416,15 +423,19 @@ Now we have a tape that contains entries that each have a list of adjoints to us
 
 Reverse mode requires only one sweep to compute all the partials for a function $f(x_1,x_2..., x_m)$, therefore it is more efficient for functions having $m > 1$ variables.
 
+\begin{editnote}
+define "efficient" in this context and why it is significant
+\end{editnote}
+
 \section{Higher-Order Reverse Mode}
+
 \begin{editnote}
 Why is it useful?
 Why isn't it as simple as first-order reverse mode?
 \end{editnote}
 
 In nonlinear optimization problems, in particular those using some variation of the Newton method, one must evaluate either the exact or an approximation of the Hessian matrix at each iteration. The Hessian matrix is a square matrix of all the second-order partial derivatives for a function. It describes the local curvature of a function of many variables \cite{wiki_hessian}. In some statistical computing routines, such as mixed effects problems using the Laplace Transformation method, third-order mixed partials are required. In either case, it is desirable to calculate these derivatives in the most efficient manner possible, as problems involving a high number of parameters can easily become arduous if using a finite differences method or even a forward mode automatic differentiation routine. \\
-At first glance, it may seem the solution is to simply differentiate Algorithm 2, but this will neglect to account for important nonlinear interactions as Gowler, et. al. have demonstrated with their "Edge-Pushing" algorithm \cite{gowler_ep}.  This observation is an important contribution to the research of higher-order reverse mode automatic differentiation and has been tremendously insightful in the development of our algorithm.
-
+At first glance, it may seem the solution is to simply differentiate Algorithm 2, but this will neglect to account for important nonlinear interactions as Gowler, et. al. have demonstrated with their "Edge-Pushing" algorithm \cite{gowler_ep}. This observation is an important contribution to the research of higher-order reverse mode automatic differentiation and has been tremendously insightful in the development of this algorithm.
 
 
 \subsection{Nonlinear Interactions}
@@ -434,7 +445,7 @@ A nonlinear interaction can be defined at the expression level as an interaction
  f(x,y,z) = \frac{x*y}{e^z}
 \end{equation}
 
-Here $x$ and $y$ interact with the nonlinear expression $e^{z}$, therefore $x$ and $y$ are said to have a nonlinear interaction with $z$. These nonlinear interactions must be accounted for in the reverse mode accumulation of order greater than one. To satisfy this requirement, we must update Algorithm 2 in order to accommodate these nonlinear dependencies. This means, whenever $x$ and $y$ are found at the statement level, $z$ will accompany them and vice versa. Furthermore, a variable resulting from the evaluation of $f(x,y,z)$ will also be considered nonlinear as it is the result of a nonlinear expression. This means anytime the resulting dependent variable is used, it will be considered nonlinear, just as the expression $e^{z}$  is in the above equation.
+Here $x$ and $y$ interact with the nonlinear expression $e^{z}$, therefore $x$ and $y$ are said to have a nonlinear interaction with $z$. These nonlinear interactions must be accounted for in the reverse mode accumulation of order greater than one. To satisfy this requirement, Algorithm 2 must be updated in order to accommodate these nonlinear dependencies. This means, whenever $x$ and $y$ are found at the statement level, $z$ will accompany them and vice versa. Furthermore, a variable resulting from the evaluation of $f(x,y,z)$ will also be considered nonlinear as it is the result of a nonlinear expression. This means that any time the resulting dependent variable is used, it will be considered nonlinear, just as the expression $e^{z}$ is in Equation ___.
 
 \begin{editnote}
 What is a nonlinear interaction?
@@ -442,7 +453,7 @@ Why is it important to track them?
 \end{editnote}
 
 \subsection{Second-Order Reverse Mode}
-Given the observation of nonlinear interactions, we are now able to differentiate and expand on Algorithm 2 in order to account for any nonlinear interactions that may have occurred at the statement level. To do this, we introduce the idea of variable sets at each entry in the "Tape" structure. Recall a set is a list of unique entries. These sets not only hold variables that were found in the evaluated statement, but also those that have nonlinear interaction with any of the statement level variables. Before each entry in the "Tape" is evaluated, we prepare the entry by combining the variables from the expression statement with those that have nonlinear interactions with variables found at the statement level. This procedure occurs whenever a "=" operator is found.  The result is a concise list of variable information required to properly accumulate the higher-order derivatives for that entry. In addition, after the entry has been evaluated during the reverse mode accumulation, it is also necessary to add the statement level variables into the next entry to be evaluated. This leads us to Algorithm 3. \\
+Given the observation of nonlinear interactions, Algorithm 2 can be differentiated and expanded upon in order to account for any nonlinear interactions that may have occurred at the statement level. To do this, variable sets (def?) are introduced / included / ??? at each entry in the "Tape" structure. Recall that a set is a list of unique entries. These sets hold not only variables that were found in the evaluated statement, but also those that have nonlinear interaction with any of the statement level variables. Before each entry in the "Tape" is evaluated, the entry is prepared by combining the variables from the expression statement with those that have nonlinear interactions with variables found at the statement level. This procedure occurs whenever a "=" operator is found.  The result is a concise list of variable information required to properly accumulate the higher-order derivatives for that entry. In addition, after the entry has been evaluated during the reverse mode accumulation, it is also necessary to add the statement level variables into the next entry to be evaluated. This leads to Algorithm 3. \\
 \newpage
 
 \begin{algorithm*}[!htb]
@@ -498,15 +509,12 @@ Given the observation of nonlinear interactions, we are now able to differentiat
 \end{algorithmic}
  \end{algorithm*}
 
-As you can see from Algorithm 3, we obtain not only the second-order mixed partials, but the gradient as well.  To properly evaluate Algorithm 3, we are required to have the computational graph for each expression statement. Having this computational graph gives us all the tools and information we need to build any nonlinear interaction list that may be required. In addition, the computational graph gives us the opportunity to omit any temporary variables that arise from function evaluations in the expression. Furthermore, it allows us to compute local derivatives for any variables that are in the expression and they are our adjoint entries. Figure 1 shows an example of what happens during a second-order statement level evaluation involving nonlinear interactions. \\
+In Algorithm 3, both the second-order mixed partials and the gradient are obtained as well.  To properly evaluate Algorithm 3, the computational graph for each expression statement is required. Having this computational graph provides all of the tools and information needed to build any nonlinear interaction list that may be required. In addition, the computational graph allows for the opportunity to omit any temporary variables that arise from function evaluations in the expression. Furthermore, it allows for computation of local derivatives for any variables that are in the expression and they are the adjoint entries. The detailed steps of ________  are ________ during a second-order statement level evaluation involving nonlinear interactions (Fig. 1). \\
 \\
 
 \newpage
 \begin{figure}
 \centering
-
-
-
 
 \begin{tikzpicture}[level/.style={sibling distance=20mm/#1}]
 \node[right]  (one) at (-5,2) {\makecell[l]{\textbf{1. Evaluate and create the graph} \\ \textbf{$g = f(x,y,z) = \frac{x*y}{e^z}$}}} ;
@@ -519,7 +527,6 @@ child {node [circle,draw] (e) {$exp$}
 child {node [circle,draw] (f) {$z$}}
 };
 
-
 \node[right]  (one) at (1.5,2) {\makecell[l]{\textbf{2. Retrieve next "Tape" entry and} \\ \textbf{create statement level variable set}}};
 \node [circle,draw] at (3.5,0)(aa) {$/$}
 child {node [circle,draw] (bb) {$*$}
@@ -531,9 +538,6 @@ child {node [circle,draw, fill = red] (ff) {$z$}}
 };
 
 \node[draw,draw=white] at (5,0) {\tiny \makecell[l]{\textit{Variable Set:} \\ \textit{[x0,x1,x2]}}};
-
-
-
 
 \node[right]  (one) at (-5,-5) {\makecell[l]{\textbf{3. Create nonlinear} \\ \textbf{interaction sets}}} ;
 \node [circle,draw,fill=red] at (-3,-6)(aa) {$/$}
@@ -581,8 +585,6 @@ child {node [circle,draw] (fff) {$z$}}
 \node[right]  (one) at (5,-7) {\tiny \makecell[l]{\textit{Local Hessian:} \\ \textit{|$0$, $\frac{1}{e^{z}}$ , $\frac{-(log(e)*y)}{e^{z}}$|} \\ \textit{|$\frac{1}{e^{z}}$, $0$ , $\frac{-(log(e)*x)}{e^{z}}$|} \\ \textit{|$\frac{-(log(e)*y)}{e^{z}}$ , $\frac{-(log(e)*x)}{e^{z}}$ , $\frac{(log(e)^2*x*y)}{e^z}$|}}} ;
 
 
-
-
 \end{tikzpicture}
 \caption{The evaluation sequence at the statement level resulting in a second-order entry into the derivative structure, or "Tape". If no nonlinear interactions are found, step 3 is simply omitted.}
 \end{figure}
@@ -594,7 +596,7 @@ For a detailed trace of the evaluation and derivative accumulation for the expre
 
 
 \subsection{Third-Order Reverse Mode}
-Continuing the observation of nonlinear interactions and differentiating Algorithm 3 leads us to Algorithm 4 for third-order reverse mode accumulation. The results from the third-order algorithm gives us the gradient, Hessian, and the third-order mixed partial derivatives of our objective function.
+Continuing the observation of nonlinear interactions and differentiating Algorithm 3 leads to Algorithm 4 for third-order reverse mode accumulation. The results from the third-order algorithm are the gradient, Hessian, and the third-order mixed partial derivatives of the objective function.
 
 \clearpage
 
@@ -653,7 +655,7 @@ Third order reverse mode description.
 \end{editnote}
 
 \section{Implementation in C++}
-We have chosen to implement our framework for automatic differentiation in the C++ programming language. Being a object oriented language, C++ makes it easy for us to build the computational graphs required at each statement evaluation. C++ also has the added benefit of providing a mechanism for operator overloading, making it easy to implement algorithms just as if they were using native data types like float or double.
+This framework for automatic differentiation has been implemented in the C++11 programming language. C++ makes it easy to build the computational graphs required at each statement evaluation, as it is an object-oriented language. C++ has the added benefit of providing mechanisms for template metaprogramming and operator overloading, making it easy to implement algorithms as if they were using native data types like float or double.
 
 \begin{editnote}
 Why C++?
@@ -661,9 +663,14 @@ Why C++?
 
 \section{Testing}
 
+Something
+
 \section{Benchmarks}
 
+Something
+
 \section{Conclusions}
+
 \begin{editnote}
 Talk about the benefits and limitations of the algorithm.
 \end{editnote}
