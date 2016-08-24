@@ -52,7 +52,7 @@
 }
 
 \usepackage{amsmath}
-\usepackage{graphicx} 
+\usepackage{graphicx}
 \usepackage{wrapfig}
 \usepackage{forest}
 \usepackage{tikz}
@@ -199,12 +199,12 @@
 \large
 \textsc{Matthew R. Supernaw}\\[2mm] % Your name
 \normalsize National Oceanic Atmospheric Administration \\ % Your institution
-\normalsize National Marine Fisheries Service\\ % Your institution
+\normalsize National Marine Fisheries Service, SEFSC\\ % Your institution
 \normalsize \href{mailto:matthew.supernaw@noaa.gov}{matthew.supernaw@noaa.gov} \\ % Your email address
 \\
-\textsc{Teresa A'mar, PhD}\\[2mm] % Your name
+\textsc{Z. Teresa A'mar, PhD}\\[2mm] % Your name
 \normalsize National Oceanic Atmospheric Administration \\ % Your institution
-\normalsize Office Of Science And Technology\\ % Your institution
+\normalsize National Marine Fisheries Service, Office Of Science And Technology\\ % Your institution
 \normalsize \href{mailto:teresa.amar@noaa.gov}{teresa.amar@noaa.gov} \\% Your email address
 \vspace{-5mm}
 }
@@ -225,7 +225,7 @@
 \begin{abstract}
 
 \noindent
-The method of computing first-order partial derivatives in reverse mode has been well documented in literature. In this article we present an extension to the reverse mode automatic differentiation algorithm which allows us to compute higher-order mixed partial derivatives up to third-order. In addition, we introduce an implementation written in the C++ programing language. These higher-order mixed derivatives are particularly useful for optimization problems where gradients and/or Hessian matrices are needed. To demonstrate the usefulness of these algorithms, we'll show how the second and third-order derivatives are used in various scientific programming routines. 
+The method of computing first-order partial derivatives in reverse mode has been well documented in literature. In this article we present an extension to the reverse mode automatic differentiation algorithm which allows us to compute higher-order mixed partial derivatives up to third-order. In addition, we introduce an implementation written in the C++ programing language. These higher-order mixed derivatives are particularly useful for optimization problems where gradients and/or Hessian matrices are needed. To demonstrate the usefulness of these algorithms, we'll show how the second and third-order derivatives are used in various scientific programming routines.
 
 
 \end{abstract}
@@ -238,34 +238,43 @@ The method of computing first-order partial derivatives in reverse mode has been
 \section{Introduction}
 
 
-\lettrine[nindent=0em,lines=3]{A}utomatic, or algorithmic, differentiation (AD) is a chain rule-based technique for evaluating derivatives
-of functions given as computer programs for their elimination \cite{griewank}.This technique exploits the fact that every computer program, no matter how complicated, executes a sequence of elementary arithmetic operations (addition, subtraction, multiplication, division, etc.) and elementary functions (exp, log, sin, cos, etc.) \cite{wiki_ad}. In this section, we provide a very basic description of automatic differentiation. Compared to finite-difference techniques, AD has proven to be more efficient for accurately computing partial derivatives. \\
+\lettrine[nindent=0em,lines=3]{A}utomatic, or algorithmic, differentiation (AD) is a chain rule-based technique for evaluating derivatives of functions given as computer programs for their elimination \cite{griewank}. This technique is useful because every computer algorithm, no matter how complicated, consists of elementary arithmetic operations (addition, subtraction, multiplication, division, etc.) and elementary functions (exp, log, sin, cos, etc.) \cite{wiki_ad}.
 
-At the heart of AD is the chain rule. Recall from calculus, the chain rule is a method for computing the derivative of two or more functions:\\
- \begin{equation}
- y = f(g(x)) 
- \end{equation}
-  \\
- with \textit{y=f(g(x))} as the outer function and \textit{g(x)} as the inner function. \\ 
- \\
- \textbf{Chain Rule:} \\ \\
-  \begin{equation}
- \textit{f(g(x))' = g'(x) f'(g(x))} \\
- \end{equation}
- or \\
-\begin{equation}
-\frac{df}{dx} = \frac{dg}{dx}\frac{df}{dg}
-\end{equation}
-\\
-with \textit{$\frac{df}{dg}$} as the outer derivative and \textit{$\frac{dg}{dx}$} as the inner derivative. \\
+Other methods used for optimization include X, Y, and finite-difference techniques.  Compared to finite-difference techniques, AD has proven to be more efficient for accurately computing partial derivatives. \\
 
 \begin{editnote}
 Why is it useful?
 Who uses AD?
 \end{editnote}
-                 
 
-\section{Forward Mode}
+\section{Methods}
+
+In this section, we provide a very basic description of automatic differentiation (AD).
+
+The foundation of AD is the chain rule. The chain rule in calculus is a method for computing the derivative of two or more functions:\\
+ \begin{equation}
+ y = f(g(x))
+ \end{equation}
+  \\
+ with \textit{y=f(g(x))} as the outer function and \textit{g(x)} as the inner function. \\
+ \\
+ \textbf{Chain Rule:} \\ \\
+  \begin{equation}
+ \textit{f(g(x))' = f'(g(x)) g'(x)} \\
+ \end{equation}
+ or \\
+\begin{equation}
+\frac{df}{dx} = \frac{df}{dg}\frac{dg}{dx}
+\end{equation}
+\\
+with \textit{$\frac{df}{dg}$} as the outer derivative and \textit{$\frac{dg}{dx}$} as the inner derivative. \\
+
+\begin{editnote}
+Build from the chain rule to what the forward and backward modes are
+\end{editnote}
+
+
+\subsection{Forward Mode}
 Forward mode (or the tangent linear method) AD traverses the chain rule from inside to outside. That is, from (3),  \textit{$\frac{df}{dg}$} is computed before \textit{$\frac{dg}{dx}$}. To demonstrate how the forward accumulation of the chain rule works, consider the expressions $f(x_1,x_2) = ln(x_1x_2)$. Here $g(x_1,x_2) = x_1x_2$ and $f(x_1,x_2) = ln(g(x_1,x_2))$. So, to find the gradient $\nabla f(x_1,x_2) $ we must evaluate $f(x_1,x_2)$ and record these operations to a "Tape" so we can evaluate the partial derivatives later.\\
 \\
 \begin{tikzpicture}
@@ -324,29 +333,28 @@ The above "Tape" evaluation can be generalized algorithmically by:\\
  \begin{algorithm}
   \caption{Forward Mode Accumulation}
   \begin{algorithmic}[1]
-\State $\hat{w} = [ x_1',x_2',x_3'...x_m']$ 
+\State $\hat{w} = [ x_1',x_2',x_3'...x_m']$
 \For{$i = 1$ to ${m}$}
-\State $\hat{w}[i] = 1.0$ 
+\State $\hat{w}[i] = 1.0$
 \For{$j = 1$ to ${n}$}
-\State $Tape[j]\rightarrow Evaluate$ 
+\State $Tape[j]\rightarrow Evaluate$
 \EndFor
 \State $\nabla f[i] = Tape[n]\rightarrow Value$
-\State  $\hat{w}[i] = 0.0$ 
+\State  $\hat{w}[i] = 0.0$
 \EndFor
 \end{algorithmic}
  \end{algorithm}
 
-As you can see from Algorithm 1, for a function $f(x_1,x_2..., x_m)$ the "Tape" must be evaluated \textit{m} times to compute the gradient. For highly parameterized functions, it may be desirable to compute the gradient using reverse mode accumulation.
+From Algorithm 1, for a function $f(x_1,x_2..., x_m)$ the "Tape" must be evaluated \textit{m} times to compute the gradient. For highly parameterized functions, it may be desirable to compute the gradient using reverse mode accumulation.
 
 
-\section{Reverse Mode}
 \subsubsection{Reverse Mode}
 Reverse mode (or the adjoint method) AD traverses the chain rule from outside to inside. That is, from (3),  \textit{$\frac{dg}{dx}$} is computed before \textit{$\frac{df}{dg}$}. It works by accumulating a series of adjoints in the opposite direction of the forward mode method. This can be generalized by the following algorithm:
 \begin{algorithm*}
   \caption{Reverse Mode Accumulation \cite{griewank2}}
   \begin{algorithmic}[1]
-\State \textbf{Input:} \textit{Tape} 
-\State $\bar{w} = [\bar{ x_1},\bar{x_2},\bar{x_3}...\bar{x_{m-1}}] = 0$ 
+\State \textbf{Input:} \textit{Tape}
+\State $\bar{w} = [\bar{ x_1},\bar{x_2},\bar{x_3}...\bar{x_{m-1}}] = 0$
 \State $\bar{w}[m] = 1$
 \For{$i = m$ to ${1}$}
 \State $\bar{w_i}=\bar{w}[i]$
@@ -358,8 +366,8 @@ Reverse mode (or the adjoint method) AD traverses the chain rule from outside to
 \State \textbf{Output:} $\nabla f = \bar{w} =  [\bar{ x_1},\bar{x_2},\bar{x_3}...\bar{x_{m}}]$
 \end{algorithmic}
  \end{algorithm*}
- 
-To demonstrate the reverse mode method, lets revisit our example from the forward mode description in the previous section with slight modifications to the "Tape" in order to represent the partial derivative entries, also know as adjoints. \\
+
+To demonstrate the reverse mode method, let's revisit the example from the forward mode description in the previous section with slight modifications to the "Tape" in order to represent the partial derivative entries, also know as adjoints. \\
  \begin{tikzpicture}
 \node[right]  (zero) at (-3, 0) {\textbf{Evaluation}} ;
 \node[right]  (one) at (3, 0) {\textbf{Tape}} ;
@@ -415,7 +423,7 @@ Why isn't it as simple as first-order reverse mode?
 \end{editnote}
 
 In nonlinear optimization problems, in particular those using some variation of the Newton method, one must evaluate either the exact or an approximation of the Hessian matrix at each iteration. The Hessian matrix is a square matrix of all the second-order partial derivatives for a function. It describes the local curvature of a function of many variables \cite{wiki_hessian}. In some statistical computing routines, such as mixed effects problems using the Laplace Transformation method, third-order mixed partials are required. In either case, it is desirable to calculate these derivatives in the most efficient manner possible, as problems involving a high number of parameters can easily become arduous if using a finite differences method or even a forward mode automatic differentiation routine. \\
-At first glance, it may seem the solution is to simply differentiate Algorithm 2, but this will neglect to account for important nonlinear interactions as Gowler, et. al. have demonstrated with their "Edge-Pushing" algorithm \cite{gowler_ep}.  This observation is an important contribution to the research of higher-order reverse mode automatic differentiation and has been tremendously insightful in the development of our algorithm. 
+At first glance, it may seem the solution is to simply differentiate Algorithm 2, but this will neglect to account for important nonlinear interactions as Gowler, et. al. have demonstrated with their "Edge-Pushing" algorithm \cite{gowler_ep}.  This observation is an important contribution to the research of higher-order reverse mode automatic differentiation and has been tremendously insightful in the development of our algorithm.
 
 
 
@@ -426,7 +434,7 @@ A nonlinear interaction can be defined at the expression level as an interaction
  f(x,y,z) = \frac{x*y}{e^z}
 \end{equation}
 
-Here $x$ and $y$ interact with the nonlinear expression $e^{z}$, therefore $x$ and $y$ are said to have a nonlinear interaction with $z$. These nonlinear interactions must be accounted for in the reverse mode accumulation of order greater than one. To satisfy this requirement, we must update Algorithm 2 in order to accommodate these nonlinear dependencies. This means, whenever $x$ and $y$ are found at the statement level, $z$ will accompany them and vice versa. Furthermore, a variable resulting from the evaluation of $f(x,y,z)$ will also be considered nonlinear as it is the result of a nonlinear expression. This means anytime the resulting dependent variable is used, it will be considered nonlinear, just as the expression $e^{z}$  is in the above equation.  
+Here $x$ and $y$ interact with the nonlinear expression $e^{z}$, therefore $x$ and $y$ are said to have a nonlinear interaction with $z$. These nonlinear interactions must be accounted for in the reverse mode accumulation of order greater than one. To satisfy this requirement, we must update Algorithm 2 in order to accommodate these nonlinear dependencies. This means, whenever $x$ and $y$ are found at the statement level, $z$ will accompany them and vice versa. Furthermore, a variable resulting from the evaluation of $f(x,y,z)$ will also be considered nonlinear as it is the result of a nonlinear expression. This means anytime the resulting dependent variable is used, it will be considered nonlinear, just as the expression $e^{z}$  is in the above equation.
 
 \begin{editnote}
 What is a nonlinear interaction?
@@ -441,9 +449,9 @@ Given the observation of nonlinear interactions, we are now able to differentiat
   \caption{Reverse Mode With Hessian Accumulation}
   \begin{algorithmic}[1]
 \State \textbf{Input:} \textit{Tape} \\
-% [\bar{ x_1},\bar{x_2},\bar{x_3}...\bar{x_{m-1}}] 
-\State $\nabla f = \bar{w}[m] = 0$ 
-\State $\nabla^2 f =  \bar{h}[m][m] = 0$ 
+% [\bar{ x_1},\bar{x_2},\bar{x_3}...\bar{x_{m-1}}]
+\State $\nabla f = \bar{w}[m] = 0$
+\State $\nabla^2 f =  \bar{h}[m][m] = 0$
 %\State  $\bar{h} = \left| \begin{array}{ccccc}
 %\frac{\partial^2 f}{\partial x_1^2} & \frac{\partial^2 f}{\partial x_1 \partial x_2} & \frac{\partial^2 f}{\partial x_1 \partial x_3} & ... & \frac{\partial^2 f}{\partial x_1 \partial x_m} \\
 %\frac{\partial^2 f}{\partial x_2^2} & \frac{\partial^2 f}{\partial x_2 \partial x_2} & \frac{\partial^2 f}{\partial x_2 \partial x_3} & ... & \frac{\partial^2 f}{\partial x_2 \partial x_m}  \\
@@ -474,7 +482,7 @@ Given the observation of nonlinear interactions, we are now able to differentiat
 \State Push statement level variables to entry[i-1].
 \EndIf
 \EndFor
-%\State \textbf{Output:}  \\ 
+%\State \textbf{Output:}  \\
 %\State $\nabla f = \bar{w}[m] $ \\
 %\State $\nabla^2 f =  \bar{h}[m][m]$ \\
 % $\nabla f = \bar{w} =  [\bar{ x_1},\bar{x_2},\bar{x_3}...\bar{x_{m}}]$\\
@@ -489,7 +497,7 @@ Given the observation of nonlinear interactions, we are now able to differentiat
 %  \end{array} \right|$
 \end{algorithmic}
  \end{algorithm*}
- 
+
 As you can see from Algorithm 3, we obtain not only the second-order mixed partials, but the gradient as well.  To properly evaluate Algorithm 3, we are required to have the computational graph for each expression statement. Having this computational graph gives us all the tools and information we need to build any nonlinear interaction list that may be required. In addition, the computational graph gives us the opportunity to omit any temporary variables that arise from function evaluations in the expression. Furthermore, it allows us to compute local derivatives for any variables that are in the expression and they are our adjoint entries. Figure 1 shows an example of what happens during a second-order statement level evaluation involving nonlinear interactions. \\
 \\
 
@@ -576,7 +584,7 @@ child {node [circle,draw] (fff) {$z$}}
 
 
 \end{tikzpicture}
-\caption{The evaluation sequence at the statement level resulting in a second-order entry into the derivative structure, or "Tape". If no nonlinear interactions are found, step 3 is simply omitted.} 
+\caption{The evaluation sequence at the statement level resulting in a second-order entry into the derivative structure, or "Tape". If no nonlinear interactions are found, step 3 is simply omitted.}
 \end{figure}
  \begin{editnote}
 Insert computational graph example showing nonlinear interactions.
@@ -586,16 +594,16 @@ For a detailed trace of the evaluation and derivative accumulation for the expre
 
 
 \subsection{Third-Order Reverse Mode}
-Continuing the observation of nonlinear interactions and differentiating Algorithm 3 leads us to Algorithm 4 for third-order reverse mode accumulation. The results from the third-order algorithm gives us the gradient, Hessian, and the third-order mixed partial derivatives of our objective function. 
+Continuing the observation of nonlinear interactions and differentiating Algorithm 3 leads us to Algorithm 4 for third-order reverse mode accumulation. The results from the third-order algorithm gives us the gradient, Hessian, and the third-order mixed partial derivatives of our objective function.
 
 \clearpage
 
 \begin{algorithm*}[!htb]
   \caption{Third-Order Reverse Mode Accumulation}
   \begin{algorithmic}[1]
-\State \textbf{Input:} \textit{Tape} 
-\State $\nabla f = \bar{w}[m] = 0$ 
-\State $\nabla^2 f =  \bar{h}[m][m] = 0$ 
+\State \textbf{Input:} \textit{Tape}
+\State $\nabla f = \bar{w}[m] = 0$
+\State $\nabla^2 f =  \bar{h}[m][m] = 0$
 \State $\nabla^3 f =  \bar{d}[m][m][m] = 0$ \\
 
 \State $\bar{w}[m] = 1$
@@ -620,7 +628,7 @@ Continuing the observation of nonlinear interactions and differentiating Algorit
 \For{$k = 1$ to ${n}$}
 \State  $\bar{h}[j][k] += \bar{h}[i][k]  \frac{\partial \phi_i}{\partial x_j} + \bar{h}[i][j]  \frac{\partial \phi_i}{\partial x_k}+\bar{h}[i][i]  \frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_j} + \bar{w_i}\frac{\partial^2 \phi_i}{\partial x_j \partial x_k}$
 \For{$l = 1$ to ${n}$}
-\State  \begin{varwidth}[t]{\linewidth}  $\bar{d}[j][k][l] +=  \frac{\partial \phi_i}{\partial x_j}\bar{D}[i][k][l] + \frac{\partial \phi_i}{\partial x_k}\bar{D}[i][j][l]+ \frac{\partial \phi_i}{\partial x_l}\bar{D}[i][j][k]+$ \par \hskip\algorithmicindent  $\frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_k}\bar{D}[i][i][l] + \frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_l}\bar{D}[i][i][k]+ \frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_l}\bar{D}[i][i][j]+$ \par \hskip\algorithmicindent $ \frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_l}\bar{d}_{iii}+$ \par \hskip\algorithmicindent $\frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_k}\bar{H}[i][l] + \frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_l}\bar{H}[i][k]+\frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_l}\bar{H}[i][j] +$\par \hskip\algorithmicindent $ [\frac{\partial \phi_i}{\partial x_j}\frac{\partial^2 \phi_i}{\partial x_k \partial x_l} +\frac{\partial^2 \phi_i}{\partial x_k}\frac{\partial^2 \phi_i}{\partial x_j \partial x_l} + \frac{\partial^2 \phi_i}{\partial x_l}\frac{\partial^2 \phi_i}{\partial x_j \partial x_k}]\bar{h}_{ii} +$\par \hskip\algorithmicindent $\bar{w_i}\frac{\partial^3 \phi_i}{\partial x_j \partial x_k \partial x_l}$ 
+\State  \begin{varwidth}[t]{\linewidth}  $\bar{d}[j][k][l] +=  \frac{\partial \phi_i}{\partial x_j}\bar{D}[i][k][l] + \frac{\partial \phi_i}{\partial x_k}\bar{D}[i][j][l]+ \frac{\partial \phi_i}{\partial x_l}\bar{D}[i][j][k]+$ \par \hskip\algorithmicindent  $\frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_k}\bar{D}[i][i][l] + \frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_l}\bar{D}[i][i][k]+ \frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_l}\bar{D}[i][i][j]+$ \par \hskip\algorithmicindent $ \frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_l}\bar{d}_{iii}+$ \par \hskip\algorithmicindent $\frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_k}\bar{H}[i][l] + \frac{\partial \phi_i}{\partial x_j} \frac{\partial \phi_i}{\partial x_l}\bar{H}[i][k]+\frac{\partial \phi_i}{\partial x_k} \frac{\partial \phi_i}{\partial x_l}\bar{H}[i][j] +$\par \hskip\algorithmicindent $ [\frac{\partial \phi_i}{\partial x_j}\frac{\partial^2 \phi_i}{\partial x_k \partial x_l} +\frac{\partial^2 \phi_i}{\partial x_k}\frac{\partial^2 \phi_i}{\partial x_j \partial x_l} + \frac{\partial^2 \phi_i}{\partial x_l}\frac{\partial^2 \phi_i}{\partial x_j \partial x_k}]\bar{h}_{ii} +$\par \hskip\algorithmicindent $\bar{w_i}\frac{\partial^3 \phi_i}{\partial x_j \partial x_k \partial x_l}$
 \end{varwidth}
 \EndFor
 \EndFor
@@ -630,16 +638,16 @@ Continuing the observation of nonlinear interactions and differentiating Algorit
 \EndIf
 \EndFor
 %\State  \\
-%\State \textbf{Output:}  \\ 
-%\State $\nabla f = \bar{w}[m] $ 
-%\State $\nabla^2 f =  \bar{h}[m][m]$ 
-%\State $\nabla^3 f =  \bar{d}[m][m][m] $ 
-  
+%\State \textbf{Output:}  \\
+%\State $\nabla f = \bar{w}[m] $
+%\State $\nabla^2 f =  \bar{h}[m][m]$
+%\State $\nabla^3 f =  \bar{d}[m][m][m] $
+
 \end{algorithmic}
  \end{algorithm*}
- 
 
- 
+
+
 \begin{editnote}
 Third order reverse mode description.
 \end{editnote}
@@ -669,7 +677,7 @@ $y$ = 1.5   \\
 $z$ = 2.4  \\
 \\
 \textbf{Evaluate:} \\
-$g = x*y$ \\ 
+$g = x*y$ \\
 $f  = \frac{g}{e^z}$
 
  \begin{tikzpicture}
@@ -712,7 +720,7 @@ $f  = \frac{g}{e^z}$
 
 \begin{lrbox}{\mysavebox}%
 \begin{tikzpicture}
-\node[right]  (one) at (-3, 5) {\textbf{Reverse Accumulation}}; 
+\node[right]  (one) at (-3, 5) {\textbf{Reverse Accumulation}};
 
 \node[right]  (one) at (-3, 4) {$\nabla f  = w  =  |\frac{\partial f}{\partial x }, \frac{\partial f}{\partial y },  \frac{\partial f}{\partial z}, \frac{\partial f}{\partial g}, \frac{\partial f}{\partial f}| = 0$};
 \node[right]  (one) at (-3, 1.5) { $\nabla^2 f = h = \left| \begin{array}{ccccc}\frac{\partial^2 f}{\partial x \partial x} &\frac{\partial^2 f}{\partial x \partial y} &\frac{\partial^2 f}{\partial x \partial z} &\frac{\partial^2 f}{\partial x \partial g} &\frac{\partial^2 f}{\partial x \partial f} \\ \frac{\partial^2 f}{\partial y \partial x} &\frac{\partial^2 f}{\partial y \partial y} &\frac{\partial^2 f}{\partial y \partial z} &\frac{\partial^2 f}{\partial y \partial g} &\frac{\partial^2 f}{\partial y \partial f} \\ \frac{\partial^2 f}{\partial z \partial x} &\frac{\partial^2 f}{\partial z \partial y} &\frac{\partial^2 f}{\partial z \partial z} &\frac{\partial^2 f}{\partial z \partial g} &\frac{\partial^2 f}{\partial z \partial f} \\ \frac{\partial^2 f}{\partial g \partial x} &\frac{\partial^2 f}{\partial g \partial y} &\frac{\partial^2 f}{\partial g \partial z} &\frac{\partial^2 f}{\partial g \partial g} &\frac{\partial^2 f}{\partial g \partial f} \\ \frac{\partial^2 f}{\partial f \partial x} &\frac{\partial^2 f}{\partial f \partial y} &\frac{\partial^2 f}{\partial f \partial z} &\frac{\partial^2 f}{\partial f \partial g} &\frac{\partial^2 f}{\partial f \partial f} \\ \end{array} \right| = 0$};
@@ -752,7 +760,7 @@ $f  = \frac{g}{e^z}$
 \node[right]  (one) at (-3, -16) {----------------------------------------------------};
 
 \node[right]  (one) at (-3, -16.5) {\textbf{i = m-1 = 1}};
-\node[right]  (one) at (-3, -17) {\scriptsize $Variables[x,y | z] $ // g is omitted since it is the dependent variable for this entry}; 
+\node[right]  (one) at (-3, -17) {\scriptsize $Variables[x,y | z] $ // g is omitted since it is the dependent variable for this entry};
 \node[right]  (one) at (-3, -18) {\scriptsize $w =\bar{w}[g]  = .09$};
 \node[right]  (one) at (-3, -18.5) {\scriptsize $\bar{w}[g]  = 0$};
 \node[right]  (one) at (-3, -19) {\scriptsize $\bar{H}[g][g] = \bar{h}[g][g]$};
@@ -824,25 +832,25 @@ $f  = \frac{g}{e^z}$
 
 %\section{References}
 \begin{thebibliography}{9}
- \bibitem{wiki_hessian} 
+ \bibitem{wiki_hessian}
 Wikipedia contributors
-\textit{Hessian Matrix}. 
+\textit{Hessian Matrix}.
 Wikipedia, The Free Encyclopedia, 2016.
- 
- \bibitem{gowler_ep} 
+
+ \bibitem{gowler_ep}
 Robert Mansel Gower, Margarida P. Mello
 \textit{Hessian Matrices via Automatic Differentiation}.
 Institute of Mathematics, Statistics and Scientific Computing,State University of Campinas, September 29, 2010.
 
- 
- \bibitem{griewank} 
+
+ \bibitem{griewank}
  Andreas Griewank, Andrea Walther
-[\textit{Introduction to Automatic Differentiation}]. 
+[\textit{Introduction to Automatic Differentiation}].
 PAMM · Proc. Appl. Math. Mech. 2, 45?49 (2003).
 
- \bibitem{griewank2} 
+ \bibitem{griewank2}
  Andreas Griewank
-[\textit{On Automatic Differentiation}]. 
+[\textit{On Automatic Differentiation}].
 Center for Research on Parallel Computation, 1989.
 
 \end{thebibliography}
